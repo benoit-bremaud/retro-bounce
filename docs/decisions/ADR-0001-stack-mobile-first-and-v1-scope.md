@@ -1,6 +1,6 @@
 # ADR-0001: Stack mirrors retro-shmup, mobile-first, V1 scope
 
-**Status:** Proposed — 2026-10-16 (awaiting owner validation)
+**Status:** Accepted — 2026-10-16
 
 ## Context
 
