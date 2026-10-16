@@ -13,13 +13,15 @@ One fixed-step tick where the ball destroys a brick that releases a power-up, th
 sequenceDiagram
   actor P as Player
   participant GL as GameLoop
+  participant S as GameSession
   participant W as World
   participant B as Ball
   participant BR as Brick
   participant PU as PowerUp
   participant PD as Paddle
   P->>GL: paddle input (touch drag, mouse or key)
-  GL->>W: step(dt, input)
+  GL->>S: step(dt, input)
+  S->>W: step(dt, input)
   W->>PD: moveTo(x)
   W->>B: advance(dt)
   W->>W: detect collisions
@@ -36,7 +38,8 @@ sequenceDiagram
   else power-up leaves the screen
     W->>PU: discard
   end
-  W-->>GL: updated state + events
+  W-->>S: updated state + events
+  S-->>GL: state + events
   GL->>GL: render and play sounds from events
 ```
 

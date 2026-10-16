@@ -4,7 +4,7 @@
 
 ## Context
 
-Lifecycle of one game session, from title screen to game over. Does NOT detail the ball or power-up states.
+Lifecycle of one game session, from title screen to game over or victory. Does NOT detail the ball or power-up states.
 
 ## Diagram
 

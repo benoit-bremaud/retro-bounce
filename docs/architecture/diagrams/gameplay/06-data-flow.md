@@ -16,8 +16,9 @@ flowchart LR
   World -->|"state + events"| Loop
   Loop -->|"frame"| Canvas["Canvas"]
   Loop -->|"sound events"| Audio["AudioPlayer"]
-  Loop -->|"best score"| Store[("localStorage")]
-  Store -->|"best score"| Loop
+  Loop -->|"game over or victory"| Session["GameSession"]
+  Session -->|"best score"| Store[("localStorage")]
+  Store -->|"best score"| Session
 ```
 
 ## Notes

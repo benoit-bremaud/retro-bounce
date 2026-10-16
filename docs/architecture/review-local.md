@@ -29,5 +29,11 @@ _None._
 ## ⚪ Disagree / Intentional
 - `02-sequence-brick-hit-and-power-up.md` `[design]` · Only one sequence diagram for six use cases · simple flows stay at textual use-case level (proportionality rule, skill uml-diagram-new).
 
+## Self-review before confirmation (fixed in this branch)
+- Use case labels lacked UC numbers while sequence and spec cited UC2/UC5/UC7: numbers added.
+- Spec extension 3b cited UC7 as game over, but UC7 is restart: reworded.
+- Sequence skipped GameSession and data-flow bypassed it for storage, contradicting the component diagram: both aligned.
+- State diagram context omitted Victory: fixed. All 6 diagrams re-rendered with mmdc.
+
 ## Per-dimension summary
 - Design: component diagram respects the dependency rule, flat layering. · Docs: template followed, no stray fences, no folder README. · Tests: n/a. · Security: no PII, no network, no secrets. · Correctness: all 6 Mermaid blocks render with mmdc.
