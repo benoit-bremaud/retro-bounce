@@ -46,5 +46,5 @@ sequenceDiagram
 ## Notes
 
 - The World returns events (brick destroyed, power-up caught, life lost) so rendering and audio stay outside the domain.
-- A piercing ball skips the bounce but still damages every brick it crosses.
-- Fixed time step keeps collisions deterministic and testable.
+- Fixed time step, as in retro-shmup (its ADR-0002), makes the simulation reproducible and testable.
+- Design choice for V1: a piercing ball skips the bounce but still damages every brick it crosses.

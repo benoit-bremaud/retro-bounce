@@ -1,7 +1,7 @@
 # Component diagram — gameplay — V1 structure
 
 > **Feature**: core gameplay (V1 simple)
-> **Related ADRs**: stack to be recorded (same as retro-shmup)
+> **Related ADRs**: ADR-0001
 
 ## Context
 
@@ -41,4 +41,4 @@ flowchart TB
 - Mobile-first: CanvasRenderer scales a fixed logical resolution to any viewport and orientation, InputAdapter normalizes touch, mouse and keyboard into one paddle target.
 - Domain is pure TypeScript, unit-testable without a browser.
 - Boundaries to mock in tests: time, input, storage, audio.
-- Same layout philosophy as retro-shmup, to be confirmed when its tree is copied.
+- Layout mirrors retro-shmup, checked on 2026-10-16: `src/domain`, `src/adapters`, `src/app`, with adapters named like its `canvas2d-renderer`, `web-audio-player`, `local-storage-store`. Port interfaces are added only where a boundary needs mocking (see ADR-0001).
