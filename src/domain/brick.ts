@@ -48,6 +48,14 @@ export function hitBrick(brick: Brick): boolean {
   return !brick.alive;
 }
 
+/** Destroys a breakable brick whatever its hit points (piercing ball). Returns true when it was alive. */
+export function crushBrick(brick: Brick): boolean {
+  if (!isBreakable(brick) || !brick.alive) return false;
+  brick.hp = 0;
+  brick.alive = false;
+  return true;
+}
+
 /** Points won for destroying the brick. */
 export function brickScore(brick: Brick): number {
   return SCORE[brick.kind];

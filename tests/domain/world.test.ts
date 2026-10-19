@@ -1,3 +1,4 @@
+import { firstBall } from '../support/balls';
 import { describe, expect, it } from 'vitest';
 import { BALL_RADIUS, ballSpeedForLevel } from '../../src/domain/ball';
 import { countBreakable, loadLevel } from '../../src/domain/level';
@@ -29,7 +30,7 @@ function step(
 function launchAngle(seed: number, levelIndex = 0): number {
   const world = createWorld(LEVEL_ONE, levelIndex, seed);
   step(world, 180, true);
-  return Math.atan(Math.abs(world.ball.vx) / -world.ball.vy);
+  return Math.atan(Math.abs(firstBall(world).vx) / -firstBall(world).vy);
 }
 
 describe('world', () => {
@@ -38,8 +39,8 @@ describe('world', () => {
     const box = { left: 0, top: 0, width: 0, height: 0 };
     paddleRect(world.paddle, box);
     expect(world.launched).toBe(false);
-    expect(world.ball.x).toBe(world.paddle.x);
-    expect(world.ball.y).toBe(box.top - BALL_RADIUS);
+    expect(firstBall(world).x).toBe(world.paddle.x);
+    expect(firstBall(world).y).toBe(box.top - BALL_RADIUS);
     expect(world.breakableLeft).toBe(countBreakable(loadLevel(LEVEL_ONE)));
   });
 
@@ -47,11 +48,11 @@ describe('world', () => {
     const world = createWorld(LEVEL_ONE, 0, 1);
     step(world, 100, false);
     expect(world.paddle.x).toBe(100);
-    expect(world.ball.x).toBe(100);
+    expect(firstBall(world).x).toBe(100);
     expect(world.launched).toBe(false);
     step(world, -500, false);
     expect(world.paddle.x).toBe(32);
-    expect(world.ball.x).toBe(32);
+    expect(firstBall(world).x).toBe(32);
   });
 
   it('launches upward at the level speed', () => {
@@ -59,8 +60,10 @@ describe('world', () => {
       const world = createWorld(LEVEL_ONE, 2, seed);
       step(world, 180, true);
       expect(world.launched).toBe(true);
-      expect(world.ball.vy).toBeLessThan(0);
-      expect(Math.hypot(world.ball.vx, world.ball.vy)).toBeCloseTo(ballSpeedForLevel(3));
+      expect(firstBall(world).vy).toBeLessThan(0);
+      expect(Math.hypot(firstBall(world).vx, firstBall(world).vy)).toBeCloseTo(
+        ballSpeedForLevel(3),
+      );
     }
   });
 
@@ -79,7 +82,7 @@ describe('world', () => {
     for (let seed = 0; seed < 50; seed++) {
       const world = createWorld(LEVEL_ONE, 0, seed);
       step(world, 180, true);
-      sides.add(Math.sign(world.ball.vx));
+      sides.add(Math.sign(firstBall(world).vx));
     }
     expect(sides).toEqual(new Set([-1, 1]));
   });
@@ -94,10 +97,10 @@ describe('world', () => {
     const events = createWorldEvents();
     const input: StepInput = { paddleTarget: 300, launchRequested: false };
     world.launched = true;
-    world.ball.x = 18;
-    world.ball.y = 40;
-    world.ball.vx = 0;
-    world.ball.vy = -300;
+    firstBall(world).x = 18;
+    firstBall(world).y = 40;
+    firstBall(world).vx = 0;
+    firstBall(world).vy = -300;
     for (let i = 0; i < 10 && !events.cleared; i++) stepWorld(world, input, DT, events);
     expect(events.cleared).toBe(true);
     expect(events.brokenCount).toBe(1);
@@ -110,9 +113,9 @@ describe('world', () => {
     world.paddle.x = 90;
     resetBallOnPaddle(world);
     expect(world.launched).toBe(false);
-    expect(world.ball.x).toBe(90);
-    expect(world.ball.y).toBe(595 - BALL_RADIUS);
-    expect(world.ball.vx).toBe(0);
-    expect(world.ball.vy).toBe(0);
+    expect(firstBall(world).x).toBe(90);
+    expect(firstBall(world).y).toBe(595 - BALL_RADIUS);
+    expect(firstBall(world).vx).toBe(0);
+    expect(firstBall(world).vy).toBe(0);
   });
 });

@@ -120,3 +120,12 @@ _None._
 - Verdict: all Must and Should findings fixed in the review commit.
 - Fixed: `Random` port used by the world, `StepInput` object (no 5-argument step), `startSession(seed?)`, `finished` flag removed, `LifeLost` keeps world and score, same-step "last brick and last ball" counts as cleared, `mixSeed` unsigned, tests for the transition no-op matrix, deterministic traces, headless Victory and GameOver runs.
 - Pre-merge gate (local): `make verify` green (typecheck, lint, knip, format, 141 tests with coverage, doc coverage, gitleaks, audit, SonarQube gate PASSED). QA pass on the running product is not applicable yet (no UI in this task).
+
+## Task #7 — domain III (branch feat/7-domain-iii)
+
+- Date: 2026-10-19
+- Checks run: design · docs · tests · correctness (four agents, reconciled into one list)
+- Verdict: no bug found; Must (stale docs, missing end-to-end tests) and the Should items fixed in the review commit.
+- Fixed: `WorldEvents.lost` meaning, `moveBall`/`stepSession`/`stepWorld` docstrings, diagrams 02, 03, 04, 05 and the GDD (power-ups vanish on life lost, timers frozen in pause); `resetBalls` no longer returns a detached ball, `stepPowerUps` lost its unused running count, `crushBrick` result now decides the piercing path; tests for life loss with several balls, same-step clear with the last ball lost and a catch, swap-remove with several power-ups, expiry by elapsed time, effects kept across catches, multi-ball cap, draw order with a full pool, seeded drops, richer determinism trace.
+- Left as Nice: piercing ball dropped at more than 4 contacts in one step, timers one step short (both unnoticeable in play), a generic pool type (only two occurrences).
+- Pre-merge gate (local): `make verify` green, see the PR for the final numbers. QA pass on the running product is not applicable yet (no UI).

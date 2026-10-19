@@ -2,9 +2,9 @@ import { type Rect } from './geometry';
 import { LOGICAL_WIDTH } from './logical-size';
 
 /** Vertical position of the paddle centre in game units. */
-const PADDLE_Y = 600;
+export const PADDLE_Y = 600;
 /** Paddle height in game units. */
-const PADDLE_HEIGHT = 10;
+export const PADDLE_HEIGHT = 10;
 /** Normal paddle width in game units. */
 export const PADDLE_WIDTH = 64;
 /** Paddle width while the wide-paddle power-up is active. */

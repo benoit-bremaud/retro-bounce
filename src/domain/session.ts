@@ -1,8 +1,10 @@
-import { clearStepResult } from './collision';
 import { type LevelLayout } from './level';
+import { POWER_UP_SCORE } from './powerup';
 import {
   createWorld,
+  clearWorldEvents,
   createWorldEvents,
+  endEffects,
   resetBallOnPaddle,
   stepWorld,
   type StepInput,
@@ -34,7 +36,7 @@ export interface Session {
   seed: number;
 }
 
-/** What happened during one {@link stepSession} call; the world part is the collision and level result. */
+/** What happened during one {@link stepSession} call; the world part is the collision, level and power-up result. */
 export interface SessionEvents {
   world: WorldEvents;
   /** The last ball fell: the session entered `lifeLost`. */
@@ -126,8 +128,7 @@ export function restartSession(session: Session): void {
 function clearEvents(events: SessionEvents): void {
   events.lifeLost = false;
   events.levelCleared = false;
-  clearStepResult(events.world);
-  events.world.cleared = false;
+  clearWorldEvents(events.world);
 }
 
 /**
@@ -135,7 +136,9 @@ function clearEvents(events: SessionEvents): void {
  * `input.launchRequested`) and `playing` simulate; every other state does nothing here. Entering
  * `lifeLost` or `levelCleared` is reported in `events`, then the app calls {@link continueSession};
  * the run is over when the state is `gameOver` or `victory` after that call (save the best score
- * then). If the last brick and the last ball fall in the same step, the level counts as cleared.
+ * then). Score gains per step: brick points, +{@link POWER_UP_SCORE} per power-up caught, and the
+ * level-clear life bonus. If the last brick and the last ball fall in the same step, the level
+ * counts as cleared.
  */
 export function stepSession(
   session: Session,
@@ -150,13 +153,14 @@ export function stepSession(
     if (session.world.launched) session.state = 'playing';
     return;
   }
-  session.score += events.world.points;
+  session.score += events.world.points + events.world.caughtCount * POWER_UP_SCORE;
   if (events.world.cleared) {
     session.score += session.lives * LEVEL_CLEAR_LIFE_BONUS;
     session.state = 'levelCleared';
     events.levelCleared = true;
   } else if (events.world.lost) {
     session.lives -= 1;
+    endEffects(session.world);
     session.state = 'lifeLost';
     events.lifeLost = true;
   }

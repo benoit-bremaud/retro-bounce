@@ -44,13 +44,13 @@ Each destroyed brick has a **15 %** chance to release one. It falls at 120 units
 
 | Power-up | Effect | Duration |
 |---|---|---|
-| Piercing ball (lead) | The ball goes through breakable bricks without bouncing off them, damaging each one. It still bounces off walls, paddle and unbreakable bricks | 8 s |
-| Multi-ball | Each ball in play becomes 3 (two new balls at ±20° from the original), up to 6 balls in total | Until balls are lost |
+| Piercing ball (lead) | The ball goes through breakable bricks without bouncing off them, destroying each one in a single pass (a strong brick included). It still bounces off walls, paddle and unbreakable bricks | 8 s |
+| Multi-ball | Each ball in play becomes 3 (two new balls at ±20° from the original), up to 6 balls in total | Until a life is lost |
 | Wide paddle | Paddle width 64 → 96 | 12 s |
 
 - Catching the same timed power-up again restarts its timer, it does not stack.
 - If the last breakable brick and the last ball fall in the same step, the level counts as cleared (no life lost).
-- A life is lost only when the **last** ball falls. Timed effects end when a life is lost.
+- A life is lost only when the **last** ball falls. Timed effects end and falling power-ups vanish when a life is lost. Timers only run while playing (frozen in pause).
 
 ## 6. Scoring
 
