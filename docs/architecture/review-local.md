@@ -43,3 +43,29 @@ _None._
 
 ## Per-dimension summary
 - Design: component diagram respects the dependency rule, flat layering. · Docs: template followed, no stray fences, no folder README. · Tests: n/a. · Security: no PII, no network, no secrets. · Correctness: all 6 Mermaid blocks render with mmdc.
+
+---
+
+# Local review — task #3 toolchain (branch chore/3-toolchain vs main)
+
+- Date: 2026-10-19 · Commit: `783e1a7` + SECURITY.md fix · Mode: push gate
+- Verdict: ship after the Should below · Must 0 · Should 1 · Nice 1
+
+## Gate (head SHA after fix)
+| Step | Result |
+|---|---|
+| 1 Tests | ✅ 1 unit test (placeholder), `pnpm build` ✅. E2E: none yet (issue #11) |
+| 2 Coverage | tests 100 % stmts / lines, 0 branches (floor 80, ratchet 90) · docs 100 % (2/2, floor 90) |
+| 3 SonarQube | ✅ QUALITY GATE STATUS: PASSED (project `retro-bounce`) |
+| 4 Secrets | ✅ gitleaks clean · no tracked .env · diff read: nothing sensitive · all Actions pinned to a SHA |
+| 5 QA pass | skipped (`--push`), the placeholder page only fills a canvas |
+
+## 🟡 Should Have
+- `SECURITY.md:16` `[docs]` · the file says private vulnerability reporting is enabled, but the API reports it disabled (also on retro-blocks) · owner action: enable it in Settings > Security, or reword. Not changed by the assistant (account setting).
+
+## 🔵 Nice to Have
+- `.github/dependabot.yml` `[security]` · `dependabot_security_updates` is disabled on the repo · enable in Settings when convenient.
+
+## Fixed during review
+- `SECURITY.md` copied claims that did not apply: "Dependabot alerts enabled" reworded to version-update PRs, "hall of fame with a chosen name" replaced by best score.
+- ADR numbers in copied configs renumbered ADR-0004 to ADR-0002.

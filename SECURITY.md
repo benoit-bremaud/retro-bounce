@@ -30,10 +30,10 @@ disclosed through a GitHub security advisory once released.
 - **Secret detection** — Gitleaks runs in CI on every push and pull request, plus a weekly
   schedule. Any finding fails the check; there is no advisory mode for secrets.
 - **Pinned actions** — every GitHub Actions step is pinned to a full commit SHA, never a tag.
-- **Dependency monitoring** — Dependabot alerts and update PRs are enabled for the repository.
+- **Dependency monitoring** — Dependabot version-update PRs are configured in `.github/dependabot.yml`.
 - **No backend, no personal data** — a static web page with no server, no account and no network
-  call. Settings and the local hall of fame (planned) will stay in the browser's `localStorage`
-  and hold nothing personal beyond a chosen name.
+  call. The best score (planned) will stay in the browser's `localStorage`
+  and hold nothing personal.
 - **No secrets in the repository** — the project holds no credential; real dotenv files are
   gitignored.
 
