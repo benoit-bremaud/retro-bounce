@@ -44,6 +44,14 @@ export function createStepResult(): StepResult {
   return { points: 0, broken: [], brokenCount: 0, paddleHit: false, lost: false };
 }
 
+/** Resets every field of a {@link StepResult}; one place to extend when a field is added. */
+export function clearStepResult(result: StepResult): void {
+  result.points = 0;
+  result.brokenCount = 0;
+  result.paddleHit = false;
+  result.lost = false;
+}
+
 const hit = createHit();
 /** The nearest contact found so far in the current iteration, with what it hit. */
 const contact = { t: 0, nx: 0, ny: 0, brick: undefined as Brick | undefined, onPaddle: false };
@@ -124,10 +132,7 @@ export function moveBall(
   paddle: Paddle,
   result: StepResult,
 ): void {
-  result.points = 0;
-  result.brokenCount = 0;
-  result.paddleHit = false;
-  result.lost = false;
+  clearStepResult(result);
   paddleRect(paddle, paddleBox);
   // The paddle may have moved into the ball since the last step: lift the ball onto it.
   // Only a ball whose centre has not passed the paddle's bottom edge: below it, it is lost.

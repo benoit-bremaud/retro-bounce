@@ -25,7 +25,7 @@ A solo brick-breaker (Arkanoid-style) for the browser. A paddle moves left and r
 
 - **Bounce on the paddle**: the horizontal hit position maps to an angle of ±60° from vertical (centre sends the ball straight up). The vertical component never falls below 35 % of the speed, so the ball cannot loop almost horizontally.
 - Bounce on walls and bricks mirrors the velocity. The ball speed is constant, except across levels.
-- The ball starts glued to the paddle (state Ready). A tap, Space or a click launches it upward.
+- The ball starts glued to the paddle (state Ready). A tap, Space or a click launches it upward, 10° to 20° to the left or right of vertical (angle and side drawn with the seeded generator, so a run is reproducible from its seed).
 - Collisions are resolved with a swept test so a fast ball cannot cross a brick or the paddle.
 
 ## 4. Bricks
@@ -49,6 +49,7 @@ Each destroyed brick has a **15 %** chance to release one. It falls at 120 units
 | Wide paddle | Paddle width 64 → 96 | 12 s |
 
 - Catching the same timed power-up again restarts its timer, it does not stack.
+- If the last breakable brick and the last ball fall in the same step, the level counts as cleared (no life lost).
 - A life is lost only when the **last** ball falls. Timed effects end when a life is lost.
 
 ## 6. Scoring

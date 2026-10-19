@@ -112,3 +112,11 @@ _None._
 - 🔵 left: `createBall` factory kept (used by every test, no behaviour); walls now extend below the field. Nice test refinements (cap-boundary levels, `it.each` for misses) not done.
 - ⚪ module-level scratch objects, `result.broken` growing up to 4 entries: intentional (ADR-0002, no allocation in the loop).
 
+
+## Task #6 — domain II (branch feat/6-domain-ii)
+
+- Date: 2026-10-19
+- Checks run: design · docs · tests · correctness (agents reconciled into one list)
+- Verdict: all Must and Should findings fixed in the review commit.
+- Fixed: `Random` port used by the world, `StepInput` object (no 5-argument step), `startSession(seed?)`, `finished` flag removed, `LifeLost` keeps world and score, same-step "last brick and last ball" counts as cleared, `mixSeed` unsigned, tests for the transition no-op matrix, deterministic traces, headless Victory and GameOver runs.
+- Pre-merge gate (local): `make verify` green (typecheck, lint, knip, format, 141 tests with coverage, doc coverage, gitleaks, audit, SonarQube gate PASSED). QA pass on the running product is not applicable yet (no UI in this task).
