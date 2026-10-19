@@ -60,5 +60,5 @@ classDiagram
 ## Notes
 
 - Multi-ball simply adds Ball instances. The level is lost only when the last ball falls.
-- Piercing and wide paddle are timed effects. Durations to be set at plan time.
-- V1 scope: 3 power-ups, normal and multi-hit bricks, one unbreakable type optional.
+- Piercing (8 s) and wide paddle (12 s) are timed effects, see the game design document.
+- V1 scope: 3 power-ups, normal, strong (2 hits) and unbreakable bricks, values in the game design document.

@@ -10,3 +10,5 @@
 ## 2026-10-19
 - Backlog created: 15 issues (#3 to #17), ordered by priority. Menu will be copied from retro-shmup and adapted.
 - Task #3 toolchain: files copied from retro-blocks `main` `3e88ebc` (MCDA 460/500), renamed, ADR-0002 restates the inherited rules, placeholder skeleton (`logical-size`, `main.ts`) and one test.
+- Task #3 merged in PR #18 (squash `fecb688`), Codex review: 3 findings fixed (SECURITY.md fallback, commitlint `levels` scope, ADR-0002 wording). Owner todo: enable private vulnerability reporting and Dependabot security updates.
+- Task #4: game design document v0.1 written with all V1 tuning numbers (validated by the owner), UML class notes aligned.
