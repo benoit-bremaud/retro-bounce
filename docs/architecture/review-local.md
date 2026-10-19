@@ -74,3 +74,14 @@ _None._
 - SECURITY.md: no usable private channel while the feature is off. Reworded with a fallback, owner still to enable the feature.
 - commitlint: `levels` scope missing from the allowlist. Added.
 - ADR-0002 overstated that only `main.ts` touches `window`. `src/app` helpers (frame loop) need it too, so ADR and CLAUDE.md now say the `src/app` layer, not the single file.
+
+---
+
+# Local review — task #4 GDD (branch docs/4-gdd vs main)
+
+- Date: 2026-10-19 · Mode: push gate · Verdict: ship · Must 0 · Should 0 · Nice 1
+- Gate: `make verify` green (tests 100 %, docs 100 %, gitleaks clean, Sonar PASSED, audit clean). No runtime change, QA pass skipped.
+- Veracity self-check: every issue number cited in the GDD (#8, #12, #13, #14, #17) matches the backlog, every value matches the table the owner validated, and the power-ups, brick types and session states agree with the class and state diagrams.
+- Codex review (2 findings, accepted): objective now "before losing all three lives", touch mapping fixed as relative (finger never hides the paddle), mouse absolute.
+- Fixed during self-review: paddle keyboard speed was missing, piercing behaviour on walls and unbreakable bricks and the multi-ball split angles were unspecified, class diagram notes still said "unbreakable optional" and "durations to be set".
+- 🔵 Nice: the numbers are starting points. Revisit after the first playable build (issue #9 and #10).
