@@ -4,7 +4,7 @@ Status: V1 values validated by the owner on 2026-10-19. Numbers are starting poi
 
 ## 1. Pitch
 
-A solo brick-breaker (Arkanoid-style) for the browser. A paddle moves left and right at the bottom, a ball bounces off walls, paddle and bricks, and power-ups fall from broken bricks. Clear every breakable brick without losing the last ball. Mobile-first: played with a finger on a phone, also on tablet and PC.
+A solo brick-breaker (Arkanoid-style) for the browser. A paddle moves left and right at the bottom, a ball bounces off walls, paddle and bricks, and power-ups fall from broken bricks. Clear every breakable brick before losing all three lives. Mobile-first: played with a finger on a phone, also on tablet and PC.
 
 ## 2. Playfield
 
@@ -20,7 +20,7 @@ A solo brick-breaker (Arkanoid-style) for the browser. A paddle moves left and r
 | Ball radius | 5 |
 | Ball speed | 300 units/s at level 1, +5 % per level, capped at 480 |
 | Paddle size | 64 × 10, 96 × 10 while "wide paddle" is active |
-| Paddle keyboard speed | 420 units/s (touch and mouse follow the pointer directly) |
+| Paddle keyboard speed | 420 units/s (touch is relative to the finger's movement, mouse follows the pointer's absolute x) |
 | Lives | 3 |
 
 - **Bounce on the paddle**: the horizontal hit position maps to an angle of ±60° from vertical (centre sends the ball straight up). The vertical component never falls below 35 % of the speed, so the ball cannot loop almost horizontally.
@@ -73,8 +73,8 @@ Clearing level 5 ends the game in Victory. Speed rises with the level (section 3
 
 | Input | Paddle | Launch | Pause |
 |---|---|---|---|
-| Touch | Drag a finger in the lower half of the screen: the paddle follows the finger horizontally, relative to where the touch started | Tap | Pause button on screen |
-| Mouse | The paddle follows the pointer horizontally | Click | Esc or pause button |
+| Touch | Drag a finger in the lower half of the screen: the paddle moves by the same horizontal distance as the finger (1:1, relative), wherever the touch starts, so the finger never hides the paddle | Tap | Pause button on screen |
+| Mouse | The paddle centre follows the pointer's absolute horizontal position | Click | Esc or pause button |
 | Keyboard | Left/Right arrows or A/D | Space | P or Esc |
 
 - No interaction depends on hover. Tap targets are at least 44 CSS pixels.
