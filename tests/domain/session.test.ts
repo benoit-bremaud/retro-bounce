@@ -145,6 +145,25 @@ describe('session transitions', () => {
     expect(session.world.piercingLeft).toBe(0);
   });
 
+  it('ends the effects as soon as the life is lost, including on the last life', () => {
+    const session = playing();
+    session.lives = 1;
+    session.world.piercingLeft = 5;
+    session.world.widePaddleLeft = 5;
+    session.world.paddle.width = 96;
+    Object.assign(session.world.powerUps.items[0] ?? {}, { kind: 'multiBall', x: 20, y: 100 });
+    session.world.powerUps.count = 1;
+    dropBall(session);
+    expect(step(session, 300).lifeLost).toBe(true);
+    expect(session.world.piercingLeft).toBe(0);
+    expect(session.world.widePaddleLeft).toBe(0);
+    expect(session.world.paddle.width).toBe(64);
+    expect(session.world.powerUps.count).toBe(0);
+    continueSession(session);
+    expect(session.state).toBe('gameOver');
+    expect(session.world.piercingLeft).toBe(0);
+  });
+
   it('counts the level as cleared, with the catch scored, when the last ball also falls', () => {
     const session = playing([['n.........'], LEVEL_TWO]);
     const pool = session.world.balls;

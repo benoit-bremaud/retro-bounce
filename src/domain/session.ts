@@ -4,6 +4,7 @@ import {
   createWorld,
   clearWorldEvents,
   createWorldEvents,
+  endEffects,
   resetBallOnPaddle,
   stepWorld,
   type StepInput,
@@ -159,6 +160,7 @@ export function stepSession(
     events.levelCleared = true;
   } else if (events.world.lost) {
     session.lives -= 1;
+    endEffects(session.world);
     session.state = 'lifeLost';
     events.lifeLost = true;
   }

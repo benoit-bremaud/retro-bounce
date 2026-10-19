@@ -86,18 +86,23 @@ export function clearWorldEvents(events: WorldEvents): void {
 
 const box: Rect = { left: 0, top: 0, width: 0, height: 0 };
 
+/** Ends the timed effects: piercing and wide paddle stop, the paddle is normal again, drops vanish. */
+export function endEffects(world: World): void {
+  world.piercingLeft = 0;
+  world.widePaddleLeft = 0;
+  world.powerUps.count = 0;
+  setPaddleWidth(world.paddle, PADDLE_WIDTH);
+}
+
 /**
  * Puts a single ball back on the paddle, waiting for the launch (new level, or after a lost life).
- * Timed effects end, the paddle returns to normal width and falling power-ups vanish.
+ * Also calls {@link endEffects}, so a new level never starts with an effect on.
  */
 export function resetBallOnPaddle(world: World): void {
   paddleRect(world.paddle, box);
   resetBalls(world.balls, world.paddle.x, box.top - BALL_RADIUS, 0, 0);
   world.launched = false;
-  world.piercingLeft = 0;
-  world.widePaddleLeft = 0;
-  world.powerUps.count = 0;
-  setPaddleWidth(world.paddle, PADDLE_WIDTH);
+  endEffects(world);
 }
 
 /**
