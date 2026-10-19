@@ -19,7 +19,7 @@ flowchart TB
   end
   subgraph APP["Application"]
     Loop["GameLoop (fixed step)"]
-    Session["GameSession (state machine)"]
+    Session["GameSession (state machine, see note)"]
   end
   subgraph DOMAIN["Domain (pure, no browser API)"]
     World["World (physics, collisions)"]
@@ -39,6 +39,7 @@ flowchart TB
 ## Notes
 
 - Mobile-first: CanvasRenderer scales a fixed logical resolution to any viewport and orientation, InputAdapter normalizes touch, mouse and keyboard into one paddle target.
+- Task #6: the `GameSession` state machine is pure, so it lives in `src/domain/session.ts`; the application layer only drives it (fixed-step loop, input, storage).
 - Domain is pure TypeScript, unit-testable without a browser.
 - Boundaries to mock in tests: time, input, storage, audio.
 - Layout mirrors retro-shmup, checked on 2026-10-16: `src/domain`, `src/adapters`, `src/app`, with adapters named like its `canvas2d-renderer`, `web-audio-player`, `local-storage-store`. Port interfaces are added only where a boundary needs mocking (see ADR-0001).

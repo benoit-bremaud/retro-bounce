@@ -25,7 +25,7 @@ A solo brick-breaker (Arkanoid-style) for the browser. A paddle moves left and r
 
 - **Bounce on the paddle**: the horizontal hit position maps to an angle of ±60° from vertical (centre sends the ball straight up). The vertical component never falls below 35 % of the speed, so the ball cannot loop almost horizontally.
 - Bounce on walls and bricks mirrors the velocity. The ball speed is constant, except across levels.
-- The ball starts glued to the paddle (state Ready). A tap, Space or a click launches it upward.
+- The ball starts glued to the paddle (state Ready). A tap, Space or a click launches it upward, 10° to 20° to the left or right of vertical (angle and side drawn with the seeded generator, so a run is reproducible from its seed).
 - Collisions are resolved with a swept test so a fast ball cannot cross a brick or the paddle.
 
 ## 4. Bricks
