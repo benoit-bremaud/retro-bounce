@@ -1,8 +1,7 @@
 import { createBrick, isBreakable, type Brick, type BrickKind } from './brick';
 
-/** Number of brick columns in a level layout. */
+// Grid size from the game design document (section 2).
 const LEVEL_COLUMNS = 10;
-/** Most rows a level layout may have. */
 const LEVEL_MAX_ROWS = 12;
 
 /** A level layout: one string per row from the top, `.` empty, `n` normal, `s` strong, `u` unbreakable. */
@@ -48,7 +47,7 @@ export function loadLevel(layout: LevelLayout): Brick[] {
   return bricks;
 }
 
-/** Number of bricks that must be destroyed to clear the bricks. */
+/** Number of alive breakable bricks left; unbreakable ones never count. */
 export function countBreakable(bricks: readonly Brick[]): number {
   let count = 0;
   for (let i = 0; i < bricks.length; i++) {

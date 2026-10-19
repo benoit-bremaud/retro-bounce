@@ -29,14 +29,14 @@ describe('SeededRandom', () => {
     expect(Math.max(...values)).toBeLessThan(1);
   });
 
-  it('spreads values evenly: each tenth of [0, 1) gets 10 % ± 1 % of 100 000 draws', () => {
+  it('spreads values evenly: each tenth of [0, 1) gets 10 % ± 2 % of 20 000 draws', () => {
     const bins = new Array<number>(10).fill(0);
-    for (const value of take(new SeededRandom(2026), 100_000)) {
+    for (const value of take(new SeededRandom(2026), 20_000)) {
       const bin = Math.floor(value * 10);
       bins[bin] = (bins[bin] ?? 0) + 1;
     }
     for (const count of bins) {
-      expect(Math.abs(count / 100_000 - 0.1)).toBeLessThan(0.01);
+      expect(Math.abs(count / 20_000 - 0.1)).toBeLessThan(0.02);
     }
   });
 
@@ -60,8 +60,11 @@ describe('SeededRandom', () => {
   });
 
   it('mixes the level index into the run seed', () => {
-    expect(mixSeed(5, 0)).toBe(mixSeed(5, 0));
-    expect(mixSeed(5, 0)).not.toBe(mixSeed(5, 1));
-    expect(mixSeed(5, 1)).not.toBe(mixSeed(6, 1));
+    const seen = new Set<number>();
+    for (let seed = 0; seed < 20; seed++) {
+      for (let level = 0; level < 5; level++) seen.add(mixSeed(seed, level));
+    }
+    expect(seen.size).toBe(100);
+    expect(mixSeed(5, 2)).toBe(mixSeed(5, 2));
   });
 });

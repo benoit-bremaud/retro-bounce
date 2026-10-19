@@ -1,9 +1,10 @@
 import { BALL_RADIUS, ballSpeedForLevel, createBall, type Ball } from './ball';
 import { type Brick } from './brick';
-import { createStepResult, moveBall, type StepResult } from './collision';
+import { clearStepResult, createStepResult, moveBall, type StepResult } from './collision';
 import { type Rect } from './geometry';
 import { countBreakable, loadLevel, type LevelLayout } from './level';
 import { createPaddle, movePaddleTo, paddleRect, type Paddle } from './paddle';
+import { type Random } from './ports/random';
 import { mixSeed, SeededRandom } from './random/seeded-random';
 
 /** Smallest launch angle from vertical, in radians (10°). */
@@ -22,7 +23,15 @@ export interface World {
   launched: boolean;
   /** Breakable bricks still alive; the level is cleared when it reaches 0. */
   breakableLeft: number;
-  random: SeededRandom;
+  random: Random;
+}
+
+/** One step of player intent, filled by the input adapter; allocate once and reuse. */
+export interface StepInput {
+  /** Where the paddle centre should be, in logical units (clamped by the world). */
+  paddleTarget: number;
+  /** True on the step the player asks to launch the waiting ball. */
+  launchRequested: boolean;
 }
 
 /** What happened during one {@link stepWorld} call: the collision result plus the level state. */
@@ -69,6 +78,7 @@ export function createWorld(layout: LevelLayout, levelIndex: number, runSeed: nu
 
 /** Launches the ball upward, 10° to 20° to the left or right of vertical, at the level's speed. */
 function launch(world: World): void {
+  // Draw order is part of the seed contract: angle first, then side. Swapping changes every run.
   const angle = LAUNCH_ANGLE_MIN + world.random.next() * LAUNCH_ANGLE_SPREAD;
   const side = world.random.next() < 0.5 ? -1 : 1;
   const speed = ballSpeedForLevel(world.levelIndex + 1);
@@ -78,26 +88,18 @@ function launch(world: World): void {
 }
 
 /**
- * Advances the level by `dt` seconds: moves the paddle to `paddleTarget` (centre x, clamped), then
- * either carries the ball on the paddle or, once launched, moves it. `launchRequested` launches a
- * waiting ball. Fills `events`; the caller decides what a lost ball or a cleared level means.
+ * Advances the level by `dt` seconds: moves the paddle to `input.paddleTarget`, then either carries
+ * the ball on the paddle or, once launched, moves it. `input.launchRequested` launches a waiting
+ * ball. Fully overwrites `events` on every call (no stale value from the previous step); the
+ * caller decides what a lost ball or a cleared level means.
  */
-export function stepWorld(
-  world: World,
-  paddleTarget: number,
-  launchRequested: boolean,
-  dt: number,
-  events: WorldEvents,
-): void {
-  movePaddleTo(world.paddle, paddleTarget);
+export function stepWorld(world: World, input: StepInput, dt: number, events: WorldEvents): void {
+  movePaddleTo(world.paddle, input.paddleTarget);
   events.cleared = false;
   if (!world.launched) {
-    events.points = 0;
-    events.brokenCount = 0;
-    events.paddleHit = false;
-    events.lost = false;
+    clearStepResult(events);
     resetBallOnPaddle(world);
-    if (launchRequested) launch(world);
+    if (input.launchRequested) launch(world);
     return;
   }
   moveBall(world.ball, dt, world.bricks, world.paddle, events);

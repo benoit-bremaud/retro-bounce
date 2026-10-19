@@ -1,9 +1,11 @@
+import { clearStepResult } from './collision';
 import { type LevelLayout } from './level';
 import {
   createWorld,
   createWorldEvents,
   resetBallOnPaddle,
   stepWorld,
+  type StepInput,
   type World,
   type WorldEvents,
 } from './world';
@@ -13,18 +15,23 @@ export const STARTING_LIVES = 3;
 /** Bonus per life left when a level is cleared. */
 export const LEVEL_CLEAR_LIFE_BONUS = 100;
 
-/** States of a game session (state diagram `05-state-game-session.md`). */
+/**
+ * States of a game session (state diagram `05-state-game-session.md`). Every transition function
+ * (`startSession`, `pauseSession`, ...) does nothing when called from a state the diagram does not allow.
+ */
 export type SessionState =
   'title' | 'ready' | 'playing' | 'paused' | 'lifeLost' | 'levelCleared' | 'gameOver' | 'victory';
 
 /** A run from the title screen to game over or victory. */
 export interface Session {
   state: SessionState;
+  /** Replaced (not mutated) by `startSession` and `continueSession`: do not cache it across those calls. */
   world: World;
   lives: number;
   score: number;
   readonly layouts: readonly LevelLayout[];
-  readonly seed: number;
+  /** Run seed; each level derives its own generator from it, so the same seed replays the same run. */
+  seed: number;
 }
 
 /** What happened during one {@link stepSession} call; the world part is the collision and level result. */
@@ -34,22 +41,24 @@ export interface SessionEvents {
   lifeLost: boolean;
   /** The last breakable brick fell: the session entered `levelCleared`. */
   levelCleared: boolean;
-  /** This was the last life or the last level: the run ends at the next continue, save the best score now. */
-  finished: boolean;
 }
 
 /** Allocate once and reuse across {@link stepSession} calls. */
 export function createSessionEvents(): SessionEvents {
-  return { world: createWorldEvents(), lifeLost: false, levelCleared: false, finished: false };
+  return { world: createWorldEvents(), lifeLost: false, levelCleared: false };
+}
+
+function firstWorld(layouts: readonly LevelLayout[], seed: number): World {
+  const first = layouts[0];
+  if (first === undefined) throw new Error('A session needs at least one level');
+  return createWorld(first, 0, seed);
 }
 
 /** Creates a session on the title screen. `layouts` are the levels in play order (at least one). */
 export function createSession(layouts: readonly LevelLayout[], seed: number): Session {
-  const first = layouts[0];
-  if (first === undefined) throw new Error('A session needs at least one level');
   return {
     state: 'title',
-    world: createWorld(first, 0, seed),
+    world: firstWorld(layouts, seed),
     lives: STARTING_LIVES,
     score: 0,
     layouts,
@@ -57,12 +66,16 @@ export function createSession(layouts: readonly LevelLayout[], seed: number): Se
   };
 }
 
-/** Title to ready: starts a fresh run (level 1, full lives, no score). */
-export function startSession(session: Session): void {
+/**
+ * Title to ready: starts a fresh run (level 1, full lives, no score). Pass a new `seed` for a
+ * different run; without it the session replays its current seed.
+ */
+export function startSession(session: Session, seed: number = session.seed): void {
   if (session.state !== 'title') return;
+  session.seed = seed;
   session.lives = STARTING_LIVES;
   session.score = 0;
-  session.world = createWorld(session.layouts[0] ?? [], 0, session.seed);
+  session.world = firstWorld(session.layouts, seed);
   session.state = 'ready';
 }
 
@@ -113,29 +126,26 @@ export function restartSession(session: Session): void {
 function clearEvents(events: SessionEvents): void {
   events.lifeLost = false;
   events.levelCleared = false;
-  events.finished = false;
-  events.world.points = 0;
-  events.world.brokenCount = 0;
-  events.world.paddleHit = false;
-  events.world.lost = false;
+  clearStepResult(events.world);
   events.world.cleared = false;
 }
 
 /**
  * Advances a session by one fixed step. Only `ready` (the paddle moves, the ball waits for
- * `launchRequested`) and `playing` simulate; every other state does nothing here. Entering
- * `lifeLost` or `levelCleared` is reported in `events`, then the app calls {@link continueSession}.
+ * `input.launchRequested`) and `playing` simulate; every other state does nothing here. Entering
+ * `lifeLost` or `levelCleared` is reported in `events`, then the app calls {@link continueSession};
+ * the run is over when the state is `gameOver` or `victory` after that call (save the best score
+ * then). If the last brick and the last ball fall in the same step, the level counts as cleared.
  */
 export function stepSession(
   session: Session,
-  paddleTarget: number,
-  launchRequested: boolean,
+  input: StepInput,
   dt: number,
   events: SessionEvents,
 ): void {
   clearEvents(events);
   if (session.state !== 'ready' && session.state !== 'playing') return;
-  stepWorld(session.world, paddleTarget, launchRequested, dt, events.world);
+  stepWorld(session.world, input, dt, events.world);
   if (session.state === 'ready') {
     if (session.world.launched) session.state = 'playing';
     return;
@@ -145,11 +155,9 @@ export function stepSession(
     session.score += session.lives * LEVEL_CLEAR_LIFE_BONUS;
     session.state = 'levelCleared';
     events.levelCleared = true;
-    events.finished = session.layouts[session.world.levelIndex + 1] === undefined;
   } else if (events.world.lost) {
     session.lives -= 1;
     session.state = 'lifeLost';
     events.lifeLost = true;
-    events.finished = session.lives === 0;
   }
 }

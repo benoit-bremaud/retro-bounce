@@ -1,5 +1,7 @@
 import type { Random } from '../ports/random';
 
+const TWO_POW_32 = 2 ** 32;
+
 /**
  * Deterministic gameplay randomness: xoshiro128** by Blackman and Vigna, 32-bit integer
  * state. Seeding uses a SplitMix-style 32-bit mixer (golden-ratio Weyl step + MurmurHash3 fmix32),
@@ -44,11 +46,10 @@ export class SeededRandom implements Random {
   }
 }
 
-const TWO_POW_32 = 2 ** 32;
-
 /**
  * The seed of a level from the run's seed: index 0 (level 1) mixes the run seed alone,
  * each later level adds its 0-based index through the golden-ratio step, then MurmurHash3 fmix32.
+ * Like `SeededRandom`, it treats `runSeed` as an unsigned 32-bit integer.
  */
 export function mixSeed(runSeed: number, levelIndex: number): number {
   let z = (runSeed ^ Math.imul(levelIndex, 0x9e3779b9)) >>> 0;

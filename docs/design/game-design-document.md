@@ -49,6 +49,7 @@ Each destroyed brick has a **15 %** chance to release one. It falls at 120 units
 | Wide paddle | Paddle width 64 → 96 | 12 s |
 
 - Catching the same timed power-up again restarts its timer, it does not stack.
+- If the last breakable brick and the last ball fall in the same step, the level counts as cleared (no life lost).
 - A life is lost only when the **last** ball falls. Timed effects end when a life is lost.
 
 ## 6. Scoring
