@@ -44,7 +44,7 @@ Each destroyed brick has a **15 %** chance to release one. It falls at 120 units
 
 | Power-up | Effect | Duration |
 |---|---|---|
-| Piercing ball (lead) | The ball goes through breakable bricks without bouncing off them, damaging each one. It still bounces off walls, paddle and unbreakable bricks | 8 s |
+| Piercing ball (lead) | The ball goes through breakable bricks without bouncing off them, destroying each one in a single pass (a strong brick included). It still bounces off walls, paddle and unbreakable bricks | 8 s |
 | Multi-ball | Each ball in play becomes 3 (two new balls at ±20° from the original), up to 6 balls in total | Until balls are lost |
 | Wide paddle | Paddle width 64 → 96 | 12 s |
 

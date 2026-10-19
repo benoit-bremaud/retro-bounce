@@ -1,7 +1,8 @@
-import { clearStepResult } from './collision';
 import { type LevelLayout } from './level';
+import { POWER_UP_SCORE } from './powerup';
 import {
   createWorld,
+  clearWorldEvents,
   createWorldEvents,
   resetBallOnPaddle,
   stepWorld,
@@ -126,8 +127,7 @@ export function restartSession(session: Session): void {
 function clearEvents(events: SessionEvents): void {
   events.lifeLost = false;
   events.levelCleared = false;
-  clearStepResult(events.world);
-  events.world.cleared = false;
+  clearWorldEvents(events.world);
 }
 
 /**
@@ -150,7 +150,7 @@ export function stepSession(
     if (session.world.launched) session.state = 'playing';
     return;
   }
-  session.score += events.world.points;
+  session.score += events.world.points + events.world.caughtCount * POWER_UP_SCORE;
   if (events.world.cleared) {
     session.score += session.lives * LEVEL_CLEAR_LIFE_BONUS;
     session.state = 'levelCleared';

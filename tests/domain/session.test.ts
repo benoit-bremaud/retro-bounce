@@ -1,3 +1,4 @@
+import { firstBall } from '../support/balls';
 import { describe, expect, it } from 'vitest';
 import { isBreakable } from '../../src/domain/brick';
 import {
@@ -15,6 +16,8 @@ import {
   type Session,
   type SessionState,
 } from '../../src/domain/session';
+import { PADDLE_Y } from '../../src/domain/paddle';
+import { POWER_UP_SCORE } from '../../src/domain/powerup';
 import { type StepInput } from '../../src/domain/world';
 import { playRun } from '../support/bot';
 import { LEVEL_ONE, LEVEL_TWO } from '../support/layouts';
@@ -38,24 +41,25 @@ function playing(layouts = [LEVEL_ONE, LEVEL_TWO]): Session {
 
 /** Puts the ball right under the brick in the top-left cell, flying up, paddle parked far away. */
 function aimAtTopLeftBrick(session: Session): void {
-  session.world.ball.x = 18;
-  session.world.ball.y = 40;
-  session.world.ball.vx = 0;
-  session.world.ball.vy = -300;
+  firstBall(session.world).x = 18;
+  firstBall(session.world).y = 40;
+  firstBall(session.world).vx = 0;
+  firstBall(session.world).vy = -300;
 }
 
 function dropBall(session: Session): void {
-  session.world.ball.x = 100;
-  session.world.ball.y = 700;
-  session.world.ball.vx = 0;
-  session.world.ball.vy = 300;
+  firstBall(session.world).x = 100;
+  firstBall(session.world).y = 700;
+  firstBall(session.world).vx = 0;
+  firstBall(session.world).vy = 300;
 }
 
 function breakTopLeftBrick(session: Session) {
   aimAtTopLeftBrick(session);
   const events = createSessionEvents();
   const input: StepInput = { paddleTarget: 300, launchRequested: false };
-  for (let i = 0; i < 10 && session.world.ball.vy < 0; i++) stepSession(session, input, DT, events);
+  for (let i = 0; i < 10 && firstBall(session.world).vy < 0; i++)
+    stepSession(session, input, DT, events);
   return events;
 }
 
@@ -79,10 +83,10 @@ describe('session transitions', () => {
   it('pauses and resumes, and the world does not move while paused', () => {
     const session = playing();
     pauseSession(session);
-    const y = session.world.ball.y;
+    const y = firstBall(session.world).y;
     step(session);
     expect(session.state).toBe('paused');
-    expect(session.world.ball.y).toBe(y);
+    expect(firstBall(session.world).y).toBe(y);
     resumeSession(session);
     expect(session.state).toBe('playing');
   });
@@ -110,6 +114,16 @@ describe('session transitions', () => {
     expect(session.world.bricks.filter((brick) => brick.alive && isBreakable(brick))).toHaveLength(
       1,
     );
+  });
+
+  it('adds the power-up score when one is caught', () => {
+    const session = playing();
+    const slot = session.world.powerUps.items[0];
+    if (slot) Object.assign(slot, { kind: 'widePaddle', x: session.world.paddle.x, y: PADDLE_Y });
+    session.world.powerUps.count = 1;
+    const events = step(session);
+    expect(events.world.caughtCount).toBe(1);
+    expect(session.score).toBe(POWER_UP_SCORE);
   });
 
   it('goes to game over with no life left, then back to the title', () => {
@@ -212,10 +226,10 @@ describe('transitions the diagram does not allow are ignored', () => {
   it.each(CASES)('%s ignores %s', (state, action) => {
     const session = createSession([LEVEL_ONE, LEVEL_TWO], 5);
     session.state = state;
-    const before = { ...session.world.ball };
+    const before = { ...firstBall(session.world) };
     ACTIONS[action]?.(session);
     expect(session.state).toBe(state);
-    if (state !== 'ready' && action === 'step') expect(session.world.ball).toEqual(before);
+    if (state !== 'ready' && action === 'step') expect(firstBall(session.world)).toEqual(before);
   });
 });
 
@@ -250,7 +264,7 @@ describe('headless runs', () => {
       const session = createSession([LEVEL_ONE, LEVEL_TWO], seed);
       const points: (string | number)[] = [];
       playRun(session, true, (s) => {
-        points.push(s.state, s.world.ball.x, s.world.ball.y);
+        points.push(s.state, firstBall(s.world).x, firstBall(s.world).y);
       });
       return points;
     };

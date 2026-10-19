@@ -1,6 +1,6 @@
 import { BALL_RADIUS, type Ball } from './ball';
 import { circleOverlapsRect, createHit, sweepCircleRect, type Rect } from './geometry';
-import { brickScore, hitBrick, type Brick } from './brick';
+import { brickScore, crushBrick, hitBrick, isBreakable, type Brick } from './brick';
 import { LOGICAL_HEIGHT, LOGICAL_WIDTH } from './logical-size';
 import { paddleRect, type Paddle } from './paddle';
 
@@ -98,9 +98,18 @@ function bounceOnPaddle(ball: Ball, paddle: Paddle): void {
 /**
  * Resolves the stored `contact`. Only the paddle's top face gives the angle-controlled bounce; its
  * sides and underside reflect like a wall. A brick scores only if this hit destroys it, so an
- * unbreakable brick reflects the ball and scores nothing.
+ * unbreakable brick reflects the ball and scores nothing. A piercing ball crushes breakable bricks
+ * without bouncing.
  */
-function resolveContact(ball: Ball, paddle: Paddle, result: StepResult): void {
+function resolveContact(ball: Ball, paddle: Paddle, piercing: boolean, result: StepResult): void {
+  const brick = contact.brick;
+  if (brick && piercing && isBreakable(brick)) {
+    // The ball goes straight through: no bounce, the brick is destroyed whatever its hit points.
+    crushBrick(brick);
+    result.points += brickScore(brick);
+    result.broken[result.brokenCount++] = brick;
+    return;
+  }
   if (contact.onPaddle && contact.ny < 0) {
     bounceOnPaddle(ball, paddle);
     result.paddleHit = true;
@@ -109,7 +118,6 @@ function resolveContact(ball: Ball, paddle: Paddle, result: StepResult): void {
     ball.vx -= 2 * dot * contact.nx;
     ball.vy -= 2 * dot * contact.ny;
   }
-  const brick = contact.brick;
   if (brick && hitBrick(brick)) {
     result.points += brickScore(brick);
     result.broken[result.brokenCount++] = brick;
@@ -122,7 +130,8 @@ function resolveContact(ball: Ball, paddle: Paddle, result: StepResult): void {
  * brick, wall or the paddle whatever its speed. The paddle is treated as still during the step.
  * Mutates `ball` and every brick it hits (`readonly` only forbids resizing the array); `result` is
  * reset then filled. The bottom is open: `result.lost` is set once the ball is entirely below the
- * field, and the caller must stop stepping it. Past {@link MAX_CONTACTS_PER_STEP} contacts the rest
+ * field, and the caller must stop stepping it. A `piercing` ball crosses breakable bricks (destroying
+ * each one) and still bounces on walls, the paddle and unbreakable bricks. Past {@link MAX_CONTACTS_PER_STEP} contacts the rest
  * of the move is dropped.
  */
 export function moveBall(
@@ -131,6 +140,7 @@ export function moveBall(
   bricks: readonly Brick[],
   paddle: Paddle,
   result: StepResult,
+  piercing = false,
 ): void {
   clearStepResult(result);
   paddleRect(paddle, paddleBox);
@@ -156,7 +166,7 @@ export function moveBall(
     ball.x += dx * contact.t;
     ball.y += dy * contact.t;
     remaining *= 1 - contact.t;
-    resolveContact(ball, paddle, result);
+    resolveContact(ball, paddle, piercing, result);
   }
   result.lost = ball.y - BALL_RADIUS > LOGICAL_HEIGHT;
 }

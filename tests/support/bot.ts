@@ -1,3 +1,4 @@
+import { firstBall } from './balls';
 import {
   continueSession,
   createSessionEvents,
@@ -45,7 +46,7 @@ export function playRun(
       continue;
     }
     const offset = 26 * Math.sin(stats.steps / 40);
-    input.paddleTarget = follow ? session.world.ball.x + offset : session.world.paddle.x;
+    input.paddleTarget = follow ? firstBall(session.world).x + offset : session.world.paddle.x;
     stepSession(session, input, DT, events);
     onStep?.(session);
   }
