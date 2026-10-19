@@ -129,6 +129,14 @@ describe('moveBall paddle', () => {
     expect(result.lost).toBe(false);
   });
 
+  it('does not lift a ball whose centre is below the paddle', () => {
+    const paddle = createPaddle();
+    const ball = createBall(paddle.x + 30, 607, 0, 300);
+    const result = run(ball, [], paddle);
+    expect(result.paddleHit).toBe(false);
+    expect(ball.vy).toBeCloseTo(300);
+  });
+
   it('does not catch a ball that already passed below the paddle', () => {
     const ball = createBall(180, 620, 0, 300);
     expect(run(ball).paddleHit).toBe(false);

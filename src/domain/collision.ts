@@ -130,7 +130,9 @@ export function moveBall(
   result.lost = false;
   paddleRect(paddle, paddleBox);
   // The paddle may have moved into the ball since the last step: lift the ball onto it.
-  if (ball.vy > 0 && circleOverlapsRect(ball.x, ball.y, BALL_RADIUS, paddleBox)) {
+  // Only a ball whose centre has not passed the paddle's bottom edge: below it, it is lost.
+  const notBelow = ball.y <= paddleBox.top + paddleBox.height;
+  if (ball.vy > 0 && notBelow && circleOverlapsRect(ball.x, ball.y, BALL_RADIUS, paddleBox)) {
     ball.y = paddleBox.top - BALL_RADIUS;
     bounceOnPaddle(ball, paddle);
     result.paddleHit = true;
