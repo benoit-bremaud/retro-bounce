@@ -1,6 +1,6 @@
 import { BALL_RADIUS, type Ball } from './ball';
 import { circleOverlapsRect, createHit, sweepCircleRect, type Rect } from './geometry';
-import { brickScore, crushBrick, hitBrick, isBreakable, type Brick } from './brick';
+import { brickScore, crushBrick, hitBrick, type Brick } from './brick';
 import { LOGICAL_HEIGHT, LOGICAL_WIDTH } from './logical-size';
 import { paddleRect, type Paddle } from './paddle';
 
@@ -103,9 +103,8 @@ function bounceOnPaddle(ball: Ball, paddle: Paddle): void {
  */
 function resolveContact(ball: Ball, paddle: Paddle, piercing: boolean, result: StepResult): void {
   const brick = contact.brick;
-  if (brick && piercing && isBreakable(brick)) {
-    // The ball goes straight through: no bounce, the brick is destroyed whatever its hit points.
-    crushBrick(brick);
+  if (brick && piercing && crushBrick(brick)) {
+    // Straight through: no bounce, the brick is destroyed whatever its hit points.
     result.points += brickScore(brick);
     result.broken[result.brokenCount++] = brick;
     return;
@@ -130,9 +129,9 @@ function resolveContact(ball: Ball, paddle: Paddle, piercing: boolean, result: S
  * brick, wall or the paddle whatever its speed. The paddle is treated as still during the step.
  * Mutates `ball` and every brick it hits (`readonly` only forbids resizing the array); `result` is
  * reset then filled. The bottom is open: `result.lost` is set once the ball is entirely below the
- * field, and the caller must stop stepping it. A `piercing` ball crosses breakable bricks (destroying
- * each one) and still bounces on walls, the paddle and unbreakable bricks. Past {@link MAX_CONTACTS_PER_STEP} contacts the rest
- * of the move is dropped.
+ * field, and the caller must stop stepping it. With `piercing`, breakable bricks are destroyed
+ * whatever their hit points, scored and not bounced on; walls, the paddle and unbreakable bricks
+ * still reflect. Past {@link MAX_CONTACTS_PER_STEP} contacts the rest of the move is dropped.
  */
 export function moveBall(
   ball: Ball,

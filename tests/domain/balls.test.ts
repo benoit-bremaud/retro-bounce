@@ -28,10 +28,9 @@ describe('ball pool', () => {
 
   it('resets to a single ball with the given state', () => {
     const pool = poolWith(4);
-    const ball = resetBalls(pool, 10, 20, 30, 40);
+    resetBalls(pool, 10, 20, 30, 40);
     expect(pool.count).toBe(1);
-    expect(ball).toBe(pool.items[0]);
-    expect(ball).toMatchObject({ x: 10, y: 20, vx: 30, vy: 40 });
+    expect(pool.items[0]).toMatchObject({ x: 10, y: 20, vx: 30, vy: 40 });
   });
 
   it('removes a ball by moving the last one into its slot', () => {

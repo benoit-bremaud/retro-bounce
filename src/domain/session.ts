@@ -35,7 +35,7 @@ export interface Session {
   seed: number;
 }
 
-/** What happened during one {@link stepSession} call; the world part is the collision and level result. */
+/** What happened during one {@link stepSession} call; the world part is the collision, level and power-up result. */
 export interface SessionEvents {
   world: WorldEvents;
   /** The last ball fell: the session entered `lifeLost`. */
@@ -135,7 +135,9 @@ function clearEvents(events: SessionEvents): void {
  * `input.launchRequested`) and `playing` simulate; every other state does nothing here. Entering
  * `lifeLost` or `levelCleared` is reported in `events`, then the app calls {@link continueSession};
  * the run is over when the state is `gameOver` or `victory` after that call (save the best score
- * then). If the last brick and the last ball fall in the same step, the level counts as cleared.
+ * then). Score gains per step: brick points, +{@link POWER_UP_SCORE} per power-up caught, and the
+ * level-clear life bonus. If the last brick and the last ball fall in the same step, the level
+ * counts as cleared.
  */
 export function stepSession(
   session: Session,

@@ -58,7 +58,11 @@ export interface StepInput {
   launchRequested: boolean;
 }
 
-/** What happened during one {@link stepWorld} call: the collision result plus the level state. */
+/**
+ * What happened during one {@link stepWorld} call. The {@link StepResult} fields are merged over
+ * all balls, except `lost`, which is true only when the LAST ball fell (a lost life, not a lost
+ * ball). `points` counts bricks only; the power-up bonus is added by `stepSession`.
+ */
 export interface WorldEvents extends StepResult {
   /** True when the last breakable brick was destroyed during the step. */
   cleared: boolean;
@@ -84,7 +88,7 @@ const box: Rect = { left: 0, top: 0, width: 0, height: 0 };
 
 /**
  * Puts a single ball back on the paddle, waiting for the launch (new level, or after a lost life).
- * Timed effects end and falling power-ups vanish.
+ * Timed effects end, the paddle returns to normal width and falling power-ups vanish.
  */
 export function resetBallOnPaddle(world: World): void {
   paddleRect(world.paddle, box);
@@ -136,7 +140,8 @@ const ballResult = createStepResult();
 /** Moves every ball, merging what each one did into `events`. A ball that fell leaves the pool. */
 function moveBalls(world: World, dt: number, events: WorldEvents): void {
   const piercing = world.piercingLeft > 0;
-  // Downwards, so removing a fallen ball (swap with the last) never skips one.
+  // Downwards, so removing a fallen ball (swap with the last) never skips one. This order, and so
+  // the order bricks reach `events.broken` and the drop draws, is part of the seed contract.
   for (let i = world.balls.count - 1; i >= 0; i--) {
     const ball = world.balls.items[i];
     if (ball === undefined) continue;
@@ -177,7 +182,7 @@ function stepPowerUpsOfWorld(world: World, dt: number, events: WorldEvents): voi
     const brick = events.broken[i];
     if (brick !== undefined) rollDrop(world.powerUps, brick, world.random);
   }
-  events.caughtCount = stepPowerUps(world.powerUps, dt, world.paddle, events.caught, 0);
+  events.caughtCount = stepPowerUps(world.powerUps, dt, world.paddle, events.caught);
   for (let i = 0; i < events.caughtCount; i++) {
     const kind = events.caught[i];
     if (kind !== undefined) applyPowerUp(world, kind);
@@ -189,7 +194,9 @@ function stepPowerUpsOfWorld(world: World, dt: number, events: WorldEvents): voi
  * the ball on the paddle or, once launched, runs the timed effects, moves every ball, drops and
  * catches power-ups. `input.launchRequested` launches a waiting ball. Fully overwrites `events` on
  * every call (no stale value from the previous step). `events.lost` means the last ball fell; the
- * caller decides what a lost ball or a cleared level means.
+ * Timers only run on launched steps (a paused session does not call this). The
+ * Timers only run on launched steps (a paused session never calls this). The caller decides what
+ * a lost ball or a cleared level means.
  */
 export function stepWorld(world: World, input: StepInput, dt: number, events: WorldEvents): void {
   movePaddleTo(world.paddle, input.paddleTarget);

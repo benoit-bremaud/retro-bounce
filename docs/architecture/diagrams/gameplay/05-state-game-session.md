@@ -29,5 +29,6 @@ stateDiagram-v2
 ## Notes
 
 - Auto-pause on focus loss matters on mobile (incoming call, app switch).
+- Entering LifeLost ends the timed power-ups; Paused freezes their timers.
 - Ready means the ball sits on the paddle, waiting for launch.
 - Best score is saved on entering GameOver or Victory.

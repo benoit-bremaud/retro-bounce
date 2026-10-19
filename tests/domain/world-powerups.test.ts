@@ -59,7 +59,7 @@ describe('drops', () => {
     const world = launched();
     world.random = scriptedRandom(0.9);
     aimAtBrick(world);
-    step(world, 300);
+    expect(step(world, 300).brokenCount).toBe(1);
     expect(world.powerUps.count).toBe(0);
   });
 });
@@ -87,6 +87,25 @@ describe('piercing effect', () => {
     expect(firstBall(world).vy).toBeLessThan(0);
   });
 
+  it('lasts the full duration of elapsed time', () => {
+    const world = launched();
+    world.balls.count = 0;
+    world.piercingLeft = PIERCING_DURATION;
+    for (let i = 0; i < 450; i++) step(world);
+    expect(world.piercingLeft).toBeGreaterThan(0);
+    for (let i = 0; i < 36; i++) step(world);
+    expect(world.piercingLeft).toBe(0);
+  });
+
+  it('is kept when another power-up is caught', () => {
+    const world = launched();
+    world.piercingLeft = 3;
+    dropOnPaddle(world, 'multiBall');
+    step(world);
+    expect(world.piercingLeft).toBeCloseTo(3 - DT);
+    expect(world.balls.count).toBe(3);
+  });
+
   it('restarts the timer when caught again instead of stacking', () => {
     const world = launched();
     world.piercingLeft = 2;
@@ -107,6 +126,17 @@ describe('wide paddle effect', () => {
     step(world);
     expect(world.paddle.width).toBe(PADDLE_WIDTH);
     expect(world.widePaddleLeft).toBe(0);
+  });
+
+  it('lasts the full duration of elapsed time', () => {
+    const world = launched();
+    world.balls.count = 0;
+    dropOnPaddle(world, 'widePaddle');
+    step(world);
+    for (let i = 0; i < 690; i++) step(world);
+    expect(world.paddle.width).toBe(PADDLE_WIDE_WIDTH);
+    for (let i = 0; i < 40; i++) step(world);
+    expect(world.paddle.width).toBe(PADDLE_WIDTH);
   });
 
   it('restarts the timer when caught again', () => {
@@ -134,6 +164,15 @@ describe('multi-ball effect and losing balls', () => {
     dropOnPaddle(world, 'multiBall');
     step(world);
     expect(world.balls.count).toBe(3);
+  });
+
+  it('stops splitting at six balls', () => {
+    const world = launched();
+    for (let i = 0; i < 3; i++) {
+      dropOnPaddle(world, 'multiBall');
+      step(world);
+    }
+    expect(world.balls.count).toBe(6);
   });
 
   it('loses a life only when the last ball falls', () => {

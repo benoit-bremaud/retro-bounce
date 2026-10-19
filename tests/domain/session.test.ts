@@ -126,6 +126,45 @@ describe('session transitions', () => {
     expect(session.score).toBe(POWER_UP_SCORE);
   });
 
+  it('loses a life only when the last of several balls falls, then restarts with one ball', () => {
+    const session = playing();
+    const pool = session.world.balls;
+    pool.count = 3;
+    for (let i = 0; i < 3; i++)
+      Object.assign(pool.items[i] ?? {}, { x: 100, y: 700, vx: 0, vy: 300 });
+    Object.assign(pool.items[2] ?? {}, { x: 300, y: 300, vy: -300 });
+    const first = step(session);
+    expect(first.lifeLost).toBe(false);
+    expect(session.lives).toBe(STARTING_LIVES);
+    Object.assign(firstBall(session.world), { x: 100, y: 700, vy: 300 });
+    expect(step(session).lifeLost).toBe(true);
+    expect(session.lives).toBe(STARTING_LIVES - 1);
+    session.world.piercingLeft = 5;
+    continueSession(session);
+    expect(session.world.balls.count).toBe(1);
+    expect(session.world.piercingLeft).toBe(0);
+  });
+
+  it('counts the level as cleared, with the catch scored, when the last ball also falls', () => {
+    const session = playing([['n.........'], LEVEL_TWO]);
+    const pool = session.world.balls;
+    pool.count = 2;
+    Object.assign(pool.items[0] ?? {}, { x: 18, y: 40, vx: 0, vy: -300 });
+    Object.assign(pool.items[1] ?? {}, { x: 100, y: 700, vx: 0, vy: 300 });
+    // After 3 s the power-up has fallen 360 units and lands on the paddle moved to x = 300.
+    Object.assign(session.world.powerUps.items[0] ?? {}, { kind: 'multiBall', x: 300, y: 240 });
+    session.world.powerUps.count = 1;
+    const events = step(session, 300, false, 3);
+    expect(events.world.lost).toBe(true);
+    expect(events.world.caughtCount).toBe(1);
+    expect(events.levelCleared).toBe(true);
+    expect(events.lifeLost).toBe(false);
+    expect(session.lives).toBe(STARTING_LIVES);
+    expect(session.score).toBe(
+      NORMAL_BRICK_POINTS + POWER_UP_SCORE + STARTING_LIVES * LEVEL_CLEAR_LIFE_BONUS,
+    );
+  });
+
   it('goes to game over with no life left, then back to the title', () => {
     const session = playing();
     session.lives = 1;
@@ -264,7 +303,14 @@ describe('headless runs', () => {
       const session = createSession([LEVEL_ONE, LEVEL_TWO], seed);
       const points: (string | number)[] = [];
       playRun(session, true, (s) => {
-        points.push(s.state, firstBall(s.world).x, firstBall(s.world).y);
+        points.push(
+          s.state,
+          firstBall(s.world).x,
+          firstBall(s.world).y,
+          s.score,
+          s.world.balls.count,
+          s.world.powerUps.count,
+        );
       });
       return points;
     };

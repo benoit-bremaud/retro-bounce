@@ -5,7 +5,10 @@ export const MAX_BALLS = 6;
 /** Angle between a ball and each of its two new copies when multi-ball triggers, in radians (20°). */
 export const SPLIT_ANGLE = Math.PI / 9;
 
-/** Fixed-capacity set of balls: only the first `count` entries of `items` are in play. */
+/**
+ * Fixed-capacity set of balls: only the first `count` entries of `items` are in play; slots at or
+ * after `count` hold stale balls that are never read.
+ */
 export interface BallPool {
   items: Ball[];
   count: number;
@@ -18,15 +21,15 @@ export function createBallPool(): BallPool {
   return { items, count: 0 };
 }
 
-/** Puts the pool back to one ball at (x, y) with velocity (vx, vy). Returns that ball. */
-export function resetBalls(pool: BallPool, x: number, y: number, vx: number, vy: number): Ball {
+/** Puts the pool back to one ball at (x, y) with velocity (vx, vy). */
+export function resetBalls(pool: BallPool, x: number, y: number, vx: number, vy: number): void {
+  const ball = pool.items[0];
+  if (ball === undefined) return;
   pool.count = 1;
-  const ball = pool.items[0] ?? createBall(x, y, vx, vy);
   ball.x = x;
   ball.y = y;
   ball.vx = vx;
   ball.vy = vy;
-  return ball;
 }
 
 /** Removes the ball at `index` by moving the last one into its slot (order is not kept). */

@@ -26,9 +26,14 @@ sequenceDiagram
   W->>B: advance(dt)
   W->>W: detect collisions
   alt ball hits a brick
-    W->>BR: hit(ballPower)
-    BR-->>W: destroyed + optional drop
-    W->>B: bounce (unless piercing)
+    alt piercing ball and breakable brick
+      W->>BR: crush() (any hp, no bounce)
+    else
+      W->>BR: hit()
+      W->>B: bounce
+    end
+    BR-->>W: destroyed
+    W->>W: roll drop (two seeded draws)
     W->>PU: spawn(kind, brick position)
   end
   W->>PU: fall(dt)

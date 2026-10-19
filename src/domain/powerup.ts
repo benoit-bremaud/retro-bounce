@@ -18,7 +18,7 @@ export const POWER_UP_SCORE = 50;
 export const PIERCING_DURATION = 8;
 /** Seconds the wide paddle lasts. */
 export const WIDE_PADDLE_DURATION = 12;
-/** Most power-ups falling at once; a drop is skipped when the pool is full. */
+/** Most power-ups falling at once (a safe bound for 15 % drops over a level); a drop is skipped, after its draws, when the pool is full. */
 export const MAX_POWER_UPS = 16;
 const POWER_UP_WIDTH = 24;
 const POWER_UP_HEIGHT = 12;
@@ -45,7 +45,7 @@ export function createPowerUpPool(): PowerUpPool {
 
 /**
  * Rolls the drop for one destroyed brick and spawns the power-up at its centre. Two draws when it
- * drops (chance, then kind), one otherwise; the order is part of the seed contract.
+ * drops (chance, then kind), one otherwise, whether or not the pool has a free slot; the order is part of the seed contract.
  */
 export function rollDrop(pool: PowerUpPool, brick: Brick, random: Random): void {
   if (random.next() >= POWER_UP_DROP_CHANCE) return;
@@ -77,16 +77,15 @@ function touchesPaddle(powerUp: PowerUp, paddle: Paddle): boolean {
 /**
  * Makes every power-up fall by `dt` seconds. One that touches the paddle is caught: its kind is
  * written to `caught[caughtCount++]` and it leaves the pool. One that falls out of the field is
- * dropped silently. Returns the new `caughtCount` (the caller passes the running count).
+ * dropped silently. Returns how many were caught.
  */
 export function stepPowerUps(
   pool: PowerUpPool,
   dt: number,
   paddle: Paddle,
   caught: PowerUpKind[],
-  caughtCount: number,
 ): number {
-  let count = caughtCount;
+  let count = 0;
   for (let i = pool.count - 1; i >= 0; i--) {
     const powerUp = pool.items[i];
     if (powerUp === undefined) continue;
