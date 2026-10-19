@@ -13,7 +13,7 @@ renamed. MCDA 2026-10-19: copy from retro-blocks 460/500, from retro-shmup 380/5
 
 | Topic | Decision |
 |---|---|
-| Dependency rule | `src/domain` imports no browser API and no package. Adapters implement ports. Only `src/app/main.ts` touches `window` / `document`. Enforced by ESLint and by `tsconfig.domain.json`, which compiles the domain without DOM types. |
+| Dependency rule | `src/domain` imports no browser API and no package. Adapters implement ports. Only the composition layer `src/app` (entry `main.ts` and its helpers such as the frame loop) touches `window` / `document`. Adapters get browser objects injected. Enforced by ESLint and by `tsconfig.domain.json`, which compiles the domain without DOM types. |
 | Determinism | No `Date` / `Math.random` in the domain: fixed steps and an injected seeded PRNG. |
 | No allocation in the loop | Index loops in `src/`. `for...of` is banned because it allocates an iterator below V8's optimizing tier (measured in retro-shmup, 2026-10-08). |
 | Toolchain | TypeScript 6.0 strict (typescript-eslint supports versions below 6.1), Node 22, pnpm, Vite, Vitest, ESLint strict type-checked, Prettier, knip. Tool configs are typed with Node types only. |

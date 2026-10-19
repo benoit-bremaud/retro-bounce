@@ -22,6 +22,7 @@ export default {
         'audio',
         'input',
         'ui',
+        'levels',
         'assets',
         'i18n',
         'tests',

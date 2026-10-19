@@ -12,18 +12,19 @@ ships as a new release from `main`.
 
 ## Reporting a vulnerability
 
-Please do not open a public issue for a security problem.
+Please do not post details of a security problem in a public issue.
 
-Use GitHub's private vulnerability reporting: on the repository page, open the **Security** tab
-and click **Report a vulnerability**. The report is visible only to the repository owner, who
-enables this feature in the repository settings. Include:
+The preferred channel is GitHub's private vulnerability reporting: on the repository page, open
+the **Security** tab and click **Report a vulnerability**. This feature is not enabled yet. Until
+it is, open a public issue titled "Security contact request" **without any detail** and the owner
+will arrange a private channel. A report should include:
 
 - a description of the vulnerability and its potential impact;
 - steps to reproduce, or a proof of concept;
 - the commit or release where you observed it.
 
-You will receive an acknowledgment within **72 hours**. A fix is prioritised by severity and
-disclosed through a GitHub security advisory once released.
+Reports are acknowledged within **72 hours**. A fix is prioritised by severity and disclosed
+through a GitHub security advisory once released.
 
 ## Security practices
 

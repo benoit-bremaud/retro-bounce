@@ -61,7 +61,7 @@ _None._
 | 5 QA pass | skipped (`--push`), the placeholder page only fills a canvas |
 
 ## 🟡 Should Have
-- `SECURITY.md:16` `[docs]` · the file says private vulnerability reporting is enabled, but the API reports it disabled (also on retro-blocks) · owner action: enable it in Settings > Security, or reword. Not changed by the assistant (account setting).
+- (addressed after the Codex review) `SECURITY.md` now says the feature is not enabled yet and gives a fallback. `[docs]` · original finding: the file said private vulnerability reporting is enabled, but the API reports it disabled (also on retro-blocks) · owner action: enable it in Settings > Security, or reword. Not changed by the assistant (account setting).
 
 ## 🔵 Nice to Have
 - `.github/dependabot.yml` `[security]` · `dependabot_security_updates` is disabled on the repo · enable in Settings when convenient.
@@ -69,3 +69,8 @@ _None._
 ## Fixed during review
 - `SECURITY.md` copied claims that did not apply: "Dependabot alerts enabled" reworded to version-update PRs, "hall of fame with a chosen name" replaced by best score.
 - ADR numbers in copied configs renumbered ADR-0004 to ADR-0002.
+
+## Codex review (PR #18), all three accepted
+- SECURITY.md: no usable private channel while the feature is off. Reworded with a fallback, owner still to enable the feature.
+- commitlint: `levels` scope missing from the allowlist. Added.
+- ADR-0002 overstated that only `main.ts` touches `window`. `src/app` helpers (frame loop) need it too, so ADR and CLAUDE.md now say the `src/app` layer, not the single file.
