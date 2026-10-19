@@ -85,3 +85,30 @@ _None._
 - Codex review (2 findings, accepted): objective now "before losing all three lives", touch mapping fixed as relative (finger never hides the paddle), mouse absolute.
 - Fixed during self-review: paddle keyboard speed was missing, piercing behaviour on walls and unbreakable bricks and the multi-ball split angles were unspecified, class diagram notes still said "unbreakable optional" and "durations to be set".
 - 🔵 Nice: the numbers are starting points. Revisit after the first playable build (issue #9 and #10).
+
+---
+
+# Local review — task #5 domain I (branch `feat/5-domain-i` vs `main`)
+
+- Date: 2026-10-19
+- Checks run: design · docs · tests · correctness (agents) · security (inline: pure maths, no I/O, no secrets)
+- Verdict: ship after fixes · Must 0 · Should 14 (all fixed) · Nice 5 (3 fixed, 2 left)
+
+## Pre-merge gate (to be re-run on the head SHA before merge)
+| Step | Result |
+|---|---|
+| 1 Tests | 52 unit tests green; no E2E suite yet (Playwright is issue #11) |
+| 2 Coverage | tests 100 % statements / 100 % branches (floor 80) · docs 100 % (floor 90) |
+| 3 SonarQube | PASSED on the first refactored scan, re-run after the review fixes |
+| 4 Secrets | gitleaks clean (tree and commit) · no tracked .env · diff read: nothing sensitive |
+| 5 QA pass | no UI change yet: production build smoke only, no screenshot (the game does not draw until #9) |
+
+## Findings (reconciled)
+- 🟡 [correctness+tests] a graze along a face or corner arc could break a brick without a bounce: `sweepCorner` now rejects non-approaching contacts; tests added (slide over a row, corner miss). Fixed.
+- 🟡 [design+correctness] a paddle swiped into the ball's side let the ball fall through: the ball is lifted onto the paddle first; test added. Fixed.
+- 🟡 [design] paddle box moved to `paddle.ts`; `consider` boolean trap removed; `Brick.rect` reuses `Rect`; `hitBrick` returns a boolean and `brickScore` gives the points; class diagram aligned. Fixed.
+- 🟡 [tests] weak or wrongly passing tests rewritten (paddle width, long-frame tunnelling for the wall and the paddle, exact corner and side values). Fixed.
+- 🟡 [docs] contracts of `moveBall`, `sweepCircleRect`, `resolveContact`, `findContact`, scratch objects and unbreakable hp. Fixed.
+- 🔵 left: `createBall` factory kept (used by every test, no behaviour); walls now extend below the field. Nice test refinements (cap-boundary levels, `it.each` for misses) not done.
+- ⚪ module-level scratch objects, `result.broken` growing up to 4 entries: intentional (ADR-0002, no allocation in the loop).
+

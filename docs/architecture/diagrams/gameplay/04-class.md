@@ -18,10 +18,12 @@ classDiagram
     +Brick[] bricks
   }
   class Brick {
-    +int hitPoints
-    +bool breakable
+    +BrickKind kind
+    +Rect rect
+    +int hp
+    +bool alive
     +PowerUpKind drop
-    +hit(power) bool
+    +hit() bool
   }
   class Ball {
     +Vector position
@@ -62,3 +64,4 @@ classDiagram
 - Multi-ball simply adds Ball instances. The level is lost only when the last ball falls.
 - Piercing (8 s) and wide paddle (12 s) are timed effects, see the game design document.
 - V1 scope: 3 power-ups, normal, strong (2 hits) and unbreakable bricks, values in the game design document.
+- Code shape (task #5): `Ball` and `Paddle` are flat records (`x`, `y`, `vx`, `vy`) instead of `Vector` objects, to avoid allocation in the game loop. A brick keeps `kind`, `rect`, `hp` and `alive`; `breakable` is derived from `kind`. `hit()` returns true when the brick is destroyed.

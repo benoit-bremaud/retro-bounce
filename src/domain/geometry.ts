@@ -34,6 +34,8 @@ interface Interval {
   exit: number;
 }
 
+// Module-level scratch objects: the game loop must not allocate (project rule), so the helpers
+// return their results through these. Not re-entrant, which is fine for a single-threaded domain.
 const slabX: Interval = { enter: 0, exit: 0 };
 const slabY: Interval = { enter: 0, exit: 0 };
 const corner = { x: 0, y: 0 };
@@ -68,7 +70,10 @@ function sweepCorner(
   if (discriminant < 0) return false;
   const t = (-b - Math.sqrt(discriminant)) / a;
   if (t < 0 || t > 1) return false;
-  return setHit(out, t, (ox + dx * t) / radius, (oy + dy * t) / radius);
+  const nx = (ox + dx * t) / radius;
+  const ny = (oy + dy * t) / radius;
+  // A graze (motion tangent to the corner arc) is not a hit: the ball would not bounce.
+  return nx * dx + ny * dy < 0 && setHit(out, t, nx, ny);
 }
 
 /** Normal of the face a circle with its centre inside the rectangle leaves through. */
@@ -84,6 +89,11 @@ function exitNormal(cx: number, cy: number, rect: Rect, out: Hit): void {
   else if (nearest === toRight) out.nx = 1;
   else if (nearest === toTop) out.ny = -1;
   else out.ny = 1;
+}
+
+/** Whether a circle centred at (cx, cy) overlaps the rectangle. */
+export function circleOverlapsRect(cx: number, cy: number, radius: number, rect: Rect): boolean {
+  return distanceToRect(cx, cy, rect) < radius;
 }
 
 function distanceToRect(cx: number, cy: number, rect: Rect): number {
@@ -106,15 +116,15 @@ function overlapHit(cx: number, cy: number, dx: number, dy: number, rect: Rect, 
   return out.nx * dx + out.ny * dy < 0 && setHit(out, 0, out.nx, out.ny);
 }
 
-/** Writes into `corner` the rectangle corner whose rounded zone contains (px, py), if any. */
-function cornerAt(px: number, py: number, rect: Rect): boolean {
+/** Writes into `out` the rectangle corner whose rounded zone contains (px, py), if any. */
+function cornerAt(px: number, py: number, rect: Rect, out: { x: number; y: number }): boolean {
   const right = rect.left + rect.width;
   const bottom = rect.top + rect.height;
   const inColumn = px >= rect.left && px <= right;
   const inRow = py >= rect.top && py <= bottom;
   if (inColumn || inRow) return false;
-  corner.x = px < rect.left ? rect.left : right;
-  corner.y = py < rect.top ? rect.top : bottom;
+  out.x = px < rect.left ? rect.left : right;
+  out.y = py < rect.top ? rect.top : bottom;
   return true;
 }
 
@@ -122,7 +132,9 @@ function cornerAt(px: number, py: number, rect: Rect): boolean {
  * Sweeps a circle of centre (cx, cy) along the displacement (dx, dy) against a rectangle and
  * writes the first contact into `out`. Returns false when the circle does not touch the rectangle
  * during the move, or when it only touches it while moving away. Faces and rounded corners are
- * handled exactly, so a fast circle cannot tunnel through a thin rectangle.
+ * handled exactly, so a fast circle cannot tunnel through a thin rectangle. A circle that already
+ * overlaps the rectangle hits at `t = 0` only if its motion points into it. `out` is only
+ * meaningful when the result is true. Requires `radius > 0`.
  */
 export function sweepCircleRect(
   cx: number,
@@ -149,7 +161,7 @@ export function sweepCircleRect(
   // corners that is the circle resting on a face (touching, rounding error).
   const px = enter < 0 ? cx : cx + dx * enter;
   const py = enter < 0 ? cy : cy + dy * enter;
-  if (cornerAt(px, py, rect)) {
+  if (cornerAt(px, py, rect, corner)) {
     return sweepCorner(cx - corner.x, cy - corner.y, radius, dx, dy, out);
   }
   if (enter < 0) return overlapHit(cx, cy, dx, dy, rect, out);

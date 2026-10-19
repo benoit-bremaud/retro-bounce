@@ -13,7 +13,7 @@ export interface Ball {
   vy: number;
 }
 
-/** Creates a ball at (x, y) with velocity (vx, vy). */
+/** Creates a ball at (x, y) with velocity (vx, vy), in game units per second. */
 export function createBall(x: number, y: number, vx: number, vy: number): Ball {
   return { x, y, vx, vy };
 }

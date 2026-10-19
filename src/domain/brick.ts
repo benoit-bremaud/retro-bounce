@@ -1,3 +1,5 @@
+import { type Rect } from './geometry';
+
 /** Width of a brick in game units: ten of them fill the field width. */
 export const BRICK_WIDTH = 36;
 /** Height of a brick in game units. */
@@ -9,11 +11,12 @@ export type BrickKind = 'normal' | 'strong' | 'unbreakable';
 /** A brick on the grid. `rect` is fixed at creation, `hp` and `alive` change when it is hit. */
 export interface Brick {
   kind: BrickKind;
-  rect: { left: number; top: number; width: number; height: number };
+  readonly rect: Readonly<Rect>;
   hp: number;
   alive: boolean;
 }
 
+// `unbreakable` has 0 hp but stays alive forever: `hitBrick` guards on `kind`, never on hp.
 const HIT_POINTS: Record<BrickKind, number> = { normal: 1, strong: 2, unbreakable: 0 };
 const SCORE: Record<BrickKind, number> = { normal: 10, strong: 20, unbreakable: 0 };
 
@@ -37,11 +40,15 @@ export function isBreakable(brick: Brick): boolean {
   return brick.kind !== 'unbreakable';
 }
 
-/** Applies one ball hit. Returns the points won: 0 unless this hit destroys the brick. */
-export function hitBrick(brick: Brick): number {
-  if (!isBreakable(brick) || !brick.alive) return 0;
+/** Applies one ball hit. Returns true when this hit destroys the brick. */
+export function hitBrick(brick: Brick): boolean {
+  if (!isBreakable(brick) || !brick.alive) return false;
   brick.hp -= 1;
-  if (brick.hp > 0) return 0;
-  brick.alive = false;
+  brick.alive = brick.hp > 0;
+  return !brick.alive;
+}
+
+/** Points won for destroying the brick. */
+export function brickScore(brick: Brick): number {
   return SCORE[brick.kind];
 }

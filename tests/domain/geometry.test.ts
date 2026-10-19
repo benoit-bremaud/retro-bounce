@@ -41,6 +41,11 @@ describe('sweepCircleRect faces', () => {
     expect(hit.t).toBeCloseTo(95 / 400);
   });
 
+  it('does not hit a face the circle only slides along', () => {
+    expect(sweep(80, 95, 40, 0).found).toBe(false);
+    expect(sweep(100, 60, 30, 40).found).toBe(true);
+  });
+
   it('hits a diagonal move on a face', () => {
     const { found, hit } = sweep(110, 80, 10, 40);
     expect(found).toBe(true);
@@ -61,8 +66,8 @@ describe('sweepCircleRect corners', () => {
 
   it('grazes past a corner without a hit', () => {
     expect(sweep(80, 80, 40, 0).found).toBe(false);
-    expect(sweep(100, 60, 30, 40).found).toBe(true);
-    expect(sweep(70, 98, 60, -20).found).toBe(false);
+    // Enters the grown box near its corner but passes more than a radius from the corner point.
+    expect(sweep(85, 106, 30, -30).found).toBe(false);
   });
 
   it('hits the other three corners', () => {

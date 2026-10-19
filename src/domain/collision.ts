@@ -1,11 +1,11 @@
 import { BALL_RADIUS, type Ball } from './ball';
-import { createHit, sweepCircleRect, type Rect } from './geometry';
-import { hitBrick, type Brick } from './brick';
+import { circleOverlapsRect, createHit, sweepCircleRect, type Rect } from './geometry';
+import { brickScore, hitBrick, type Brick } from './brick';
 import { LOGICAL_HEIGHT, LOGICAL_WIDTH } from './logical-size';
-import { PADDLE_HEIGHT, PADDLE_Y, type Paddle } from './paddle';
+import { paddleRect, type Paddle } from './paddle';
 
 /** Most contacts resolved in one step; the rest of the move is dropped (never reached in play). */
-export const MAX_CONTACTS_PER_STEP = 4;
+const MAX_CONTACTS_PER_STEP = 4;
 /** Largest deflection from vertical when the ball leaves the paddle, in radians (60°). */
 export const MAX_PADDLE_ANGLE = Math.PI / 3;
 
@@ -15,7 +15,7 @@ const LEFT_WALL: Rect = {
   left: -WALL_THICKNESS,
   top: -WALL_THICKNESS,
   width: WALL_THICKNESS,
-  height: LOGICAL_HEIGHT + WALL_THICKNESS,
+  height: LOGICAL_HEIGHT + 2 * WALL_THICKNESS,
 };
 const RIGHT_WALL: Rect = { ...LEFT_WALL, left: LOGICAL_WIDTH };
 const TOP_WALL: Rect = {
@@ -39,7 +39,7 @@ export interface StepResult {
   lost: boolean;
 }
 
-/** Creates an empty {@link StepResult}. */
+/** Allocate once and reuse across {@link moveBall} calls. */
 export function createStepResult(): StepResult {
   return { points: 0, broken: [], brokenCount: 0, paddleHit: false, lost: false };
 }
@@ -49,46 +49,36 @@ const hit = createHit();
 const contact = { t: 0, nx: 0, ny: 0, brick: undefined as Brick | undefined, onPaddle: false };
 const paddleBox: Rect = { left: 0, top: 0, width: 0, height: 0 };
 
-function updatePaddleBox(paddle: Paddle): void {
-  paddleBox.left = paddle.x - paddle.width / 2;
-  paddleBox.top = PADDLE_Y - PADDLE_HEIGHT / 2;
-  paddleBox.width = paddle.width;
-  paddleBox.height = PADDLE_HEIGHT;
-}
-
 /** Keeps the contact with `rect` if it is the nearest so far. */
-function consider(
-  ball: Ball,
-  dx: number,
-  dy: number,
-  rect: Rect,
-  brick: Brick | undefined,
-  onPaddle: boolean,
-): void {
+function consider(ball: Ball, dx: number, dy: number, rect: Rect, brick?: Brick): void {
   if (sweepCircleRect(ball.x, ball.y, BALL_RADIUS, dx, dy, rect, hit) && hit.t < contact.t) {
     contact.t = hit.t;
     contact.nx = hit.nx;
     contact.ny = hit.ny;
     contact.brick = brick;
-    contact.onPaddle = onPaddle;
+    contact.onPaddle = rect === paddleBox;
   }
 }
 
+/**
+ * Finds the nearest contact into `contact` (`t = Infinity` when none). On equal `t` the first
+ * candidate wins: walls, then the paddle, then bricks in array order.
+ */
 function findContact(ball: Ball, dx: number, dy: number, bricks: readonly Brick[]): void {
   contact.t = Infinity;
   contact.brick = undefined;
   contact.onPaddle = false;
-  consider(ball, dx, dy, LEFT_WALL, undefined, false);
-  consider(ball, dx, dy, RIGHT_WALL, undefined, false);
-  consider(ball, dx, dy, TOP_WALL, undefined, false);
-  consider(ball, dx, dy, paddleBox, undefined, true);
+  consider(ball, dx, dy, LEFT_WALL);
+  consider(ball, dx, dy, RIGHT_WALL);
+  consider(ball, dx, dy, TOP_WALL);
+  consider(ball, dx, dy, paddleBox);
   for (let i = 0; i < bricks.length; i++) {
     const brick = bricks[i];
-    if (brick?.alive === true) consider(ball, dx, dy, brick.rect, brick, false);
+    if (brick?.alive === true) consider(ball, dx, dy, brick.rect, brick);
   }
 }
 
-/** Sends the ball up at an angle set by where it hit the paddle: centre is straight up, edges ±60°. */
+/** Sends the ball up at an angle set by where it hit the paddle: centre is straight up, edges ±{@link MAX_PADDLE_ANGLE}, speed kept. */
 function bounceOnPaddle(ball: Ball, paddle: Paddle): void {
   const offset = Math.min(Math.max((ball.x - paddle.x) / (paddle.width / 2), -1), 1);
   const speed = Math.hypot(ball.vx, ball.vy);
@@ -97,7 +87,11 @@ function bounceOnPaddle(ball: Ball, paddle: Paddle): void {
   ball.vy = -speed * Math.cos(angle);
 }
 
-/** Changes the ball velocity and the game state for the contact stored in `contact`. */
+/**
+ * Resolves the stored `contact`. Only the paddle's top face gives the angle-controlled bounce; its
+ * sides and underside reflect like a wall. A brick scores only if this hit destroys it, so an
+ * unbreakable brick reflects the ball and scores nothing.
+ */
 function resolveContact(ball: Ball, paddle: Paddle, result: StepResult): void {
   if (contact.onPaddle && contact.ny < 0) {
     bounceOnPaddle(ball, paddle);
@@ -108,12 +102,9 @@ function resolveContact(ball: Ball, paddle: Paddle, result: StepResult): void {
     ball.vy -= 2 * dot * contact.ny;
   }
   const brick = contact.brick;
-  if (brick) {
-    const points = hitBrick(brick);
-    if (!brick.alive) {
-      result.points += points;
-      result.broken[result.brokenCount++] = brick;
-    }
+  if (brick && hitBrick(brick)) {
+    result.points += brickScore(brick);
+    result.broken[result.brokenCount++] = brick;
   }
 }
 
@@ -121,6 +112,10 @@ function resolveContact(ball: Ball, paddle: Paddle, result: StepResult): void {
  * Advances the ball by `dt` seconds, bouncing on the walls, the paddle and the bricks, and writes
  * what happened into `result`. Contacts are found with a swept test, so the ball cannot cross a
  * brick, wall or the paddle whatever its speed. The paddle is treated as still during the step.
+ * Mutates `ball` and every brick it hits (`readonly` only forbids resizing the array); `result` is
+ * reset then filled. The bottom is open: `result.lost` is set once the ball is entirely below the
+ * field, and the caller must stop stepping it. Past {@link MAX_CONTACTS_PER_STEP} contacts the rest
+ * of the move is dropped.
  */
 export function moveBall(
   ball: Ball,
@@ -133,7 +128,13 @@ export function moveBall(
   result.brokenCount = 0;
   result.paddleHit = false;
   result.lost = false;
-  updatePaddleBox(paddle);
+  paddleRect(paddle, paddleBox);
+  // The paddle may have moved into the ball since the last step: lift the ball onto it.
+  if (ball.vy > 0 && circleOverlapsRect(ball.x, ball.y, BALL_RADIUS, paddleBox)) {
+    ball.y = paddleBox.top - BALL_RADIUS;
+    bounceOnPaddle(ball, paddle);
+    result.paddleHit = true;
+  }
 
   let remaining = dt;
   for (let i = 0; i < MAX_CONTACTS_PER_STEP; i++) {
