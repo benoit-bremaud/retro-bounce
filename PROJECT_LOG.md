@@ -18,3 +18,7 @@
 - Task #6 domain II: `level` (text layouts to bricks), `world` (one level, seeded launch 10 to 20 degrees, added to the GDD), `session` (state machine of diagram 05, lives, score, level bonus), seeded random copied from retro-shmup. A single ball for now (MCDA 405 vs 390); the session lives in the domain, diagrams updated. Headless runs reach Victory and GameOver, deterministic per seed.
 - Task #6 merged in PR #25 (squash `3e22609`), Codex review: no finding.
 - Task #7 domain III: `balls` and `powerup` modules with fixed-capacity pools (MCDA 440 vs 420 pools in the world vs 320 dynamic arrays), piercing ball crushes breakable bricks in one pass, multi-ball splits every ball into three (cap 6), wide paddle, timers restart instead of stacking, effects end when a life is lost, +50 per power-up caught. A life is lost only when the last ball falls.
+- Task #7 merged in PR #26 (squash `963bf0e`), Codex review: 1 finding fixed (effects end as soon as a life is lost).
+
+## 2026-10-22
+- Task #8 levels: catalogue of the 5 levels in `levels.ts` (MCDA 470 vs 405 vs 290: TS module with a stricter `loadLevel` that rejects breakable bricks walled off by unbreakable ones). Winnability is proved by a bot that aims at the nearest reachable brick, on every level alone and on the whole campaign, for three seeds. Level 4 was redesigned after the bot showed a 16-unit channel between two walls was practically unreachable.
