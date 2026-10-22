@@ -1,0 +1,20 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#screen {
+  display: block;
+  touch-action: none;
+  user-select: none;
+  image-rendering: pixelated;
+}
