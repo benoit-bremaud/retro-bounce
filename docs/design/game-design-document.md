@@ -60,12 +60,12 @@ Each destroyed brick has a **15 %** chance to release one. It falls at 120 units
 
 ## 7. Levels
 
-Five levels, the logical grid is 10 columns wide. Outlines (exact layouts live in the level data, issue #8):
+Five levels, the logical grid is 10 columns wide. Outlines (the exact layouts are in `src/domain/levels.ts`; a layout with a breakable brick walled off by unbreakable ones is rejected when the level loads):
 
 1. Four full rows of normal bricks. Teaches the bounce.
 2. Pyramid with strong bricks in the centre.
 3. Checkerboard, strong bricks on the lower rows.
-4. Two walls of unbreakable bricks with gaps, forcing angled shots.
+4. Two walls of unbreakable bricks with wide gaps, forcing angled shots, with two rows of bricks between the walls.
 5. Mixed layout with all three brick types.
 
 Clearing level 5 ends the game in Victory. Speed rises with the level (section 3).

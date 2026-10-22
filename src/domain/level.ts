@@ -13,9 +13,53 @@ const KINDS: Readonly<Record<string, BrickKind>> = {
   u: 'unbreakable',
 };
 
+function kindAt(layout: LevelLayout, row: number, column: number): BrickKind | undefined {
+  return KINDS[layout[row]?.charAt(column) ?? ''];
+}
+
+/**
+ * Throws when a breakable brick can never be reached. The ball comes from below the grid and
+ * crosses empty cells and breakable bricks (it destroys them on the way) but never an unbreakable
+ * one, so a breakable brick is out of reach when unbreakable bricks wall it off from the bottom row.
+ * The fill is 4-connected, so a gap that only touches diagonally does not count as an opening.
+ */
+function assertReachable(layout: LevelLayout): void {
+  const rows = layout.length;
+  const seen = new Array<boolean>(rows * LEVEL_COLUMNS).fill(false);
+  const pending: number[] = [];
+  const visit = (row: number, column: number): void => {
+    const index = row * LEVEL_COLUMNS + column;
+    const outside = row < 0 || row >= rows || column < 0 || column >= LEVEL_COLUMNS;
+    if (outside || seen[index] === true || kindAt(layout, row, column) === 'unbreakable') return;
+    seen[index] = true;
+    pending.push(index);
+  };
+  for (let column = 0; column < LEVEL_COLUMNS; column++) visit(rows - 1, column);
+  for (let index = pending.pop(); index !== undefined; index = pending.pop()) {
+    const row = Math.floor(index / LEVEL_COLUMNS);
+    const column = index % LEVEL_COLUMNS;
+    visit(row - 1, column);
+    visit(row + 1, column);
+    visit(row, column - 1);
+    visit(row, column + 1);
+  }
+  for (let row = 0; row < rows; row++) {
+    for (let column = 0; column < LEVEL_COLUMNS; column++) {
+      const kind = kindAt(layout, row, column);
+      const breakable = kind !== undefined && kind !== 'unbreakable';
+      if (breakable && seen[row * LEVEL_COLUMNS + column] !== true) {
+        throw new Error(
+          `The brick at row ${String(row)}, column ${String(column)} is walled off by unbreakable bricks`,
+        );
+      }
+    }
+  }
+}
+
 /**
  * Builds the bricks of a level layout. The layout is authored data, so a malformed one (wrong
- * width, too many rows, unknown character, nothing to break) throws instead of loading half a level.
+ * width, too many rows, unknown character, nothing to break, a brick walled off by unbreakable
+ * ones) throws instead of loading half a level.
  */
 export function loadLevel(layout: LevelLayout): Brick[] {
   if (layout.length > LEVEL_MAX_ROWS) {
@@ -44,6 +88,7 @@ export function loadLevel(layout: LevelLayout): Brick[] {
     }
   }
   if (!bricks.some(isBreakable)) throw new Error('A level needs at least one breakable brick');
+  assertReachable(layout);
   return bricks;
 }
 
