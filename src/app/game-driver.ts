@@ -19,13 +19,17 @@ import type { StepInput } from '../domain/world';
  * stand-in for the full input adapter (separate issue).
  */
 export class GameDriver {
+  /** Mutated by the driver, read by the renderer. */
   readonly session: Session;
+  private readonly newSeed: () => number;
   private readonly events = createSessionEvents();
   private readonly input: StepInput = { paddleTarget: LOGICAL_WIDTH / 2, launchRequested: false };
   private tapPending = false;
 
-  constructor(seed: number) {
-    this.session = createSession(LEVELS, seed);
+  /** `newSeed` draws a run seed: once for the first session, then once per new run, so restarts differ. */
+  constructor(newSeed: () => number) {
+    this.newSeed = newSeed;
+    this.session = createSession(LEVELS, newSeed());
   }
 
   /** Where the paddle centre should be, in logical units. */
@@ -43,22 +47,21 @@ export class GameDriver {
     loseFocus(this.session);
   }
 
-  /** Advances the game by one fixed step. */
-  step(dt: number): void {
+  /** Advances the game by one fixed step of `dtSeconds`. */
+  step(dtSeconds: number): void {
     const session = this.session;
     const tapped = this.tapPending;
     this.tapPending = false;
     this.input.launchRequested = tapped && session.state === 'ready';
     if (tapped) this.applyTap();
-    stepSession(session, this.input, dt, this.events);
-    if (this.events.lifeLost || this.events.levelCleared) this.input.launchRequested = false;
+    stepSession(session, this.input, dtSeconds, this.events);
   }
 
   private applyTap(): void {
     const session = this.session;
     switch (session.state) {
       case 'title':
-        startSession(session);
+        startSession(session, this.newSeed());
         break;
       case 'paused':
         resumeSession(session);

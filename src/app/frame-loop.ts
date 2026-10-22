@@ -7,7 +7,7 @@ export const STEP_SECONDS = 1 / STEPS_PER_SECOND;
 /** One simulation step in wall-clock milliseconds. */
 export const STEP_MS = 1000 / STEPS_PER_SECOND;
 /** A single frame never advances the simulation by more than this (tab switch, breakpoint). */
-export const MAX_FRAME_MS = 250;
+const MAX_FRAME_MS = 250;
 
 // Tolerance for the floating-point remainder of repeated 1000 / 60 subtractions.
 const EPSILON_MS = 1e-6;
@@ -73,6 +73,7 @@ export class FrameLoop {
       this.target.step(STEP_SECONDS);
       this.accumulatorMs -= STEP_MS;
     }
+    // The epsilon in the loop condition can leave a tiny negative remainder.
     this.accumulatorMs = Math.max(this.accumulatorMs, 0);
     this.target.render();
     this.scheduleOnce();

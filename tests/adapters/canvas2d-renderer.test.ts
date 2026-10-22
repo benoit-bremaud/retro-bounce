@@ -4,16 +4,21 @@ import { computeViewport } from '../../src/adapters/viewport';
 import { LEVELS } from '../../src/domain/levels';
 import { createSession, startSession } from '../../src/domain/session';
 
+// Level 1 is four full rows of ten bricks.
+const FIRST_LEVEL_BRICKS = 40;
+
 function recorder() {
   const calls: string[] = [];
   const texts: string[] = [];
+  const transforms: number[][] = [];
   const ctx: DrawingContext = {
     fillStyle: '',
     font: '',
     textAlign: 'left',
     textBaseline: 'alphabetic',
-    setTransform: () => {
+    setTransform: (a: number, b: number, c: number, d: number, e: number, f: number) => {
       calls.push('setTransform');
+      transforms.push([a, b, c, d, e, f]);
     },
     fillRect: () => {
       calls.push('fillRect');
@@ -32,20 +37,21 @@ function recorder() {
       texts.push(text);
     },
   };
-  return { ctx, calls, texts };
+  return { ctx, calls, texts, transforms };
 }
 
 describe('Canvas2DRenderer', () => {
   it('applies the viewport scale and draws bricks, paddle, ball, HUD and overlay', () => {
-    const { ctx, calls, texts } = recorder();
+    const { ctx, calls, texts, transforms } = recorder();
     const renderer = new Canvas2DRenderer(ctx);
     renderer.resize(computeViewport(720, 1280, 1));
     const session = createSession(LEVELS, 1);
     startSession(session);
     renderer.render(session);
     expect(calls[0]).toBe('setTransform');
+    expect(transforms[0]).toEqual([2, 0, 0, 2, 0, 0]);
     // background + 40 bricks + paddle + overlay band
-    expect(calls.filter((c) => c === 'fillRect').length).toBe(1 + 40 + 1 + 1);
+    expect(calls.filter((c) => c === 'fillRect').length).toBe(1 + FIRST_LEVEL_BRICKS + 1 + 1);
     expect(calls).toContain('arc');
     expect(texts).toContain('SCORE 0   LIVES 3');
     expect(texts).toContain('TAP TO LAUNCH');
@@ -70,7 +76,7 @@ describe('Canvas2DRenderer', () => {
     session.world.piercingLeft = 5;
     session.world.balls.count = 2;
     renderer.render(session);
-    expect(calls.filter((c) => c === 'fillRect').length).toBe(1 + 39 + 1 + 1);
+    expect(calls.filter((c) => c === 'fillRect').length).toBe(1 + (FIRST_LEVEL_BRICKS - 1) + 1 + 1);
     expect(calls.filter((c) => c === 'arc').length).toBe(2);
     expect(texts).toContain('P');
     expect(texts).not.toContain('TAP TO LAUNCH');
@@ -84,5 +90,31 @@ describe('Canvas2DRenderer', () => {
     session.score = 40;
     renderer.render(session);
     expect(texts).toContain('SCORE 40   LIVES 3');
+  });
+
+  it.each([
+    ['title', 'TAP TO START'],
+    ['paused', 'PAUSED - TAP'],
+    ['lifeLost', 'LIFE LOST - TAP'],
+    ['levelCleared', 'LEVEL CLEARED - TAP'],
+    ['gameOver', 'GAME OVER - TAP'],
+    ['victory', 'VICTORY - TAP'],
+  ] as const)('shows the %s overlay', (state, message) => {
+    const { ctx, texts } = recorder();
+    const renderer = new Canvas2DRenderer(ctx);
+    const session = createSession(LEVELS, 1);
+    session.state = state;
+    renderer.render(session);
+    expect(texts).toContain(message);
+  });
+
+  it('rebuilds the HUD when only the lives change', () => {
+    const { ctx, texts } = recorder();
+    const renderer = new Canvas2DRenderer(ctx);
+    const session = createSession(LEVELS, 1);
+    renderer.render(session);
+    session.lives = 2;
+    renderer.render(session);
+    expect(texts).toContain('SCORE 0   LIVES 2');
   });
 });

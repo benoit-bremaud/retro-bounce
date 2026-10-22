@@ -39,6 +39,24 @@ describe('computeViewport', () => {
     }
   });
 
+  it('flips from fractional to integer exactly at x1', () => {
+    expect(computeViewport(359, 640, 1).scale).toBeCloseTo(359 / 360);
+    expect(computeViewport(360, 640, 1).scale).toBe(1);
+  });
+
+  it('keeps the canvas inside the window at fractional pixel ratios', () => {
+    for (const dpr of [1.25, 1.5, 2.625]) {
+      const view = computeViewport(412, 915, dpr);
+      expect(view.cssWidth).toBeLessThanOrEqual(412);
+      expect(view.cssHeight).toBeLessThanOrEqual(915);
+    }
+  });
+
+  it('gives an empty canvas when one dimension is zero', () => {
+    expect(computeViewport(0, 800, 1).deviceWidth).toBe(0);
+    expect(computeViewport(400, 0, 1).deviceHeight).toBe(0);
+  });
+
   it('never returns a negative scale for an empty window', () => {
     expect(computeViewport(0, 0, 1).scale).toBe(0);
   });
@@ -49,6 +67,8 @@ describe('toLogicalX', () => {
     expect(toLogicalX(50, 100)).toBe(180);
     expect(toLogicalX(-10, 100)).toBe(0);
     expect(toLogicalX(500, 100)).toBe(360);
+    expect(toLogicalX(0, 100)).toBe(0);
+    expect(toLogicalX(100, 100)).toBe(360);
   });
 
   it('falls back to the centre for a zero-width canvas', () => {

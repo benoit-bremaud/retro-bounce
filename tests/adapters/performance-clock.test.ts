@@ -2,9 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { PerformanceClock } from '../../src/adapters/performance-clock';
 
 describe('PerformanceClock', () => {
-  it('is monotonic', () => {
-    const clock = new PerformanceClock();
-    const first = clock.now();
-    expect(clock.now()).toBeGreaterThanOrEqual(first);
+  it('delegates to the injected source', () => {
+    const clock = new PerformanceClock({ now: () => 42 });
+    expect(clock.now()).toBe(42);
   });
 });

@@ -13,20 +13,22 @@ export type DrawingContext = Pick<
   | 'font'
   | 'textAlign'
   | 'textBaseline'
-  | 'setTransform'
   | 'fillRect'
   | 'beginPath'
   | 'arc'
   | 'fill'
   | 'fillText'
->;
+> & {
+  /** Narrowed to the six-number form: the only one the renderer calls. */
+  setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void;
+};
 
 /** Placeholder palette (final art direction is out of V1 scope, GDD). */
 const COLOR = {
   background: '#10131c',
   text: '#e8ecf4',
   paddle: '#4fc3f7',
-  paddlePierce: '#ffd54f',
+  piercing: '#ffd54f',
   ball: '#ffffff',
   hud: '#8c96ad',
   overlay: 'rgba(16, 19, 28, 0.72)',
@@ -52,6 +54,10 @@ const POWER_UP_LABEL: Record<PowerUpKind, string> = {
 };
 const POWER_UP_HALF = 8;
 const HUD_BASELINE = 12;
+const HUD_MARGIN = 4;
+/** Gap between neighbouring bricks, per side. */
+const BRICK_INSET = 1;
+const OVERLAY_HALF_HEIGHT = 24;
 
 /** Message shown over the field for the states that wait for a tap. */
 const OVERLAY_TEXT: Partial<Record<SessionState, string>> = {
@@ -106,10 +112,16 @@ export class Canvas2DRenderer {
     for (let i = 0; i < bricks.length; i++) {
       const brick = bricks[i];
       if (brick?.alive !== true) continue;
+      // A strong brick starts at 2 hp, so 1 hp left means it took its first hit.
       const damaged = brick.kind === 'strong' && brick.hp === 1;
       ctx.fillStyle = damaged ? BRICK_DAMAGED : BRICK_COLOR[brick.kind];
       const { left, top, width, height } = brick.rect;
-      ctx.fillRect(left + 1, top + 1, width - 2, height - 2);
+      ctx.fillRect(
+        left + BRICK_INSET,
+        top + BRICK_INSET,
+        width - 2 * BRICK_INSET,
+        height - 2 * BRICK_INSET,
+      );
     }
   }
 
@@ -137,7 +149,7 @@ export class Canvas2DRenderer {
   private drawPaddle(session: Session): void {
     const ctx = this.context;
     const { paddle, piercingLeft } = session.world;
-    ctx.fillStyle = piercingLeft > 0 ? COLOR.paddlePierce : COLOR.paddle;
+    ctx.fillStyle = piercingLeft > 0 ? COLOR.piercing : COLOR.paddle;
     ctx.fillRect(
       paddle.x - paddle.width / 2,
       PADDLE_Y - PADDLE_HEIGHT / 2,
@@ -149,7 +161,7 @@ export class Canvas2DRenderer {
   private drawBalls(session: Session): void {
     const ctx = this.context;
     const pool = session.world.balls;
-    ctx.fillStyle = session.world.piercingLeft > 0 ? COLOR.paddlePierce : COLOR.ball;
+    ctx.fillStyle = session.world.piercingLeft > 0 ? COLOR.piercing : COLOR.ball;
     for (let i = 0; i < pool.count; i++) {
       const ball = pool.items[i];
       if (ball === undefined) continue;
@@ -170,13 +182,18 @@ export class Canvas2DRenderer {
     ctx.font = '10px monospace';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    ctx.fillText(this.hudText, 4, LOGICAL_HEIGHT - HUD_BASELINE);
+    ctx.fillText(this.hudText, HUD_MARGIN, LOGICAL_HEIGHT - HUD_BASELINE);
   }
 
   private drawOverlay(message: string): void {
     const ctx = this.context;
     ctx.fillStyle = COLOR.overlay;
-    ctx.fillRect(0, LOGICAL_HEIGHT / 2 - 24, LOGICAL_WIDTH, 48);
+    ctx.fillRect(
+      0,
+      LOGICAL_HEIGHT / 2 - OVERLAY_HALF_HEIGHT,
+      LOGICAL_WIDTH,
+      OVERLAY_HALF_HEIGHT * 2,
+    );
     ctx.fillStyle = COLOR.text;
     ctx.font = 'bold 18px monospace';
     ctx.textAlign = 'center';

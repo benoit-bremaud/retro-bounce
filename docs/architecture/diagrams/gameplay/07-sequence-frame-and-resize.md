@@ -24,10 +24,12 @@ sequenceDiagram
   B->>FL: frame callback
   FL->>FL: elapsed = clamp(clock.now() - last, 0..250 ms)
   loop while accumulator >= 1/60 s
-    FL->>GD: step(1/60)
+    FL->>M: target.step(1/60)
+    M->>GD: step(1/60)
     GD->>S: stepSession(input, dt)
   end
-  FL->>R: render()
+  FL->>M: target.render()
+  M->>R: render(session)
   R->>S: read state (bricks, balls, paddle, power-ups)
   R->>R: draw at logical 360x640 under the scale transform
   B->>M: resize / orientationchange
@@ -40,5 +42,6 @@ sequenceDiagram
 
 ## Notes
 
+- `FrameLoop` drives a `FrameTarget` that `main` wires to the driver and the renderer; it holds no reference to either.
 - Integer scale keeps pixels crisp; below x1 the exact fractional fit is used. The field stays portrait in any orientation, the rest is letterbox.
 - The domain never sees the clock, the window or the canvas: `Clock` is a port, `main` is the only file touching globals.

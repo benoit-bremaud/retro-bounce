@@ -10,7 +10,7 @@ const canvas = document.querySelector<HTMLCanvasElement>('#screen');
 const context = canvas?.getContext('2d');
 if (canvas && context) {
   const renderer = new Canvas2DRenderer(context);
-  const driver = new GameDriver(Date.now() >>> 0);
+  const driver = new GameDriver(() => Date.now() >>> 0);
 
   const fit = (): void => {
     const view = computeViewport(
@@ -26,7 +26,6 @@ if (canvas && context) {
   };
   fit();
   globalThis.addEventListener('resize', fit);
-  globalThis.addEventListener('orientationchange', fit);
 
   const movePaddle = (event: PointerEvent): void => {
     const box = canvas.getBoundingClientRect();
@@ -34,6 +33,7 @@ if (canvas && context) {
   };
   canvas.addEventListener('pointermove', movePaddle);
   canvas.addEventListener('pointerdown', (event) => {
+    if (!event.isPrimary || event.button !== 0) return;
     movePaddle(event);
     driver.tap();
   });
@@ -45,7 +45,7 @@ if (canvas && context) {
   });
 
   const loop = new FrameLoop(
-    new PerformanceClock(),
+    new PerformanceClock(performance),
     {
       step: (dt) => {
         driver.step(dt);

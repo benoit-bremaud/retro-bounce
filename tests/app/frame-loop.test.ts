@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FrameLoop, MAX_FRAME_MS, STEP_MS, STEP_SECONDS } from '../../src/app/frame-loop';
+import { FrameLoop, STEP_MS, STEP_SECONDS } from '../../src/app/frame-loop';
 
 function setup() {
   let now = 0;
@@ -40,6 +40,28 @@ describe('FrameLoop', () => {
     expect(log.dts.every((dt) => dt === STEP_SECONDS)).toBe(true);
   });
 
+  it('keeps one step per frame under clock jitter', () => {
+    const { loop, log, frame } = setup();
+    loop.start();
+    frame(0);
+    for (let i = 0; i < 20; i++) {
+      const before = log.steps;
+      frame(STEP_MS + (i % 2 === 0 ? 2 : -2));
+      expect(log.steps - before).toBe(1);
+    }
+  });
+
+  it('does not replay the stopped period after a restart', () => {
+    const { loop, log, frame } = setup();
+    loop.start();
+    frame(0);
+    loop.stop();
+    frame(5000);
+    loop.start();
+    frame(0);
+    expect(log.steps).toBe(0);
+  });
+
   it('runs several steps for a slow frame and none for a fast one', () => {
     const { loop, log, frame } = setup();
     loop.start();
@@ -55,7 +77,10 @@ describe('FrameLoop', () => {
     loop.start();
     frame(0);
     frame(60_000);
-    expect(log.steps).toBeLessThanOrEqual(Math.ceil(MAX_FRAME_MS / STEP_MS) + 1);
+    // 250 ms clamp + the half-step seed = 15 whole steps.
+    expect(log.steps).toBe(15);
+    frame(STEP_MS);
+    expect(log.steps).toBe(16);
   });
 
   it('ignores a clock that goes backwards', () => {
@@ -64,6 +89,8 @@ describe('FrameLoop', () => {
     frame(0);
     frame(-100);
     expect(log.steps).toBe(0);
+    frame(STEP_MS);
+    expect(log.steps).toBe(1);
   });
 
   it('stops without rescheduling, and start twice keeps one chain', () => {
