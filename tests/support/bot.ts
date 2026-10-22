@@ -22,6 +22,9 @@ export interface RunStats {
   livesLost: number;
   /** True when the run hit the step cap instead of ending. */
   capped: boolean;
+  /** Falls where the paddle aimed at a brick, and falls where it only followed the ball. */
+  aimedShots: number;
+  fallbackShots: number;
 }
 
 /**
@@ -36,7 +39,14 @@ export function playRun(
 ): RunStats {
   const events = createSessionEvents();
   const input: StepInput = { paddleTarget: 0, launchRequested: true };
-  const stats: RunStats = { steps: 0, levelsCleared: 0, livesLost: 0, capped: false };
+  const stats: RunStats = {
+    steps: 0,
+    levelsCleared: 0,
+    livesLost: 0,
+    capped: false,
+    aimedShots: 0,
+    fallbackShots: 0,
+  };
   // A new return angle after every paddle hit, from a tiny generator of its own (the same bot
   // always plays the same run), so the ball cannot fall into a loop that never reaches some bricks.
   let state = 12345;
@@ -67,6 +77,8 @@ export function playRun(
     } else if (follow && !aimTried && ball.y > AIM_FROM_Y) {
       aimTried = true;
       aim = aimedPaddleX(session.world);
+      if (aim === undefined) stats.fallbackShots++;
+      else stats.aimedShots++;
     }
     input.paddleTarget = follow ? (aim ?? ball.x + offset) : session.world.paddle.x;
     stepSession(session, input, DT, events);

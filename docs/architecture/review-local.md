@@ -129,3 +129,12 @@ _None._
 - Fixed: `WorldEvents.lost` meaning, `moveBall`/`stepSession`/`stepWorld` docstrings, diagrams 02, 03, 04, 05 and the GDD (power-ups vanish on life lost, timers frozen in pause); `resetBalls` no longer returns a detached ball, `stepPowerUps` lost its unused running count, `crushBrick` result now decides the piercing path; tests for life loss with several balls, same-step clear with the last ball lost and a catch, swap-remove with several power-ups, expiry by elapsed time, effects kept across catches, multi-ball cap, draw order with a full pool, seeded drops, richer determinism trace.
 - Left as Nice: piercing ball dropped at more than 4 contacts in one step, timers one step short (both unnoticeable in play), a generic pool type (only two occurrences).
 - Pre-merge gate (local): `make verify` green, see the PR for the final numbers. QA pass on the running product is not applicable yet (no UI).
+
+## Task #8 — level catalogue (branch feat/8-levels)
+
+- Date: 2026-10-22
+- Checks run: design · docs · tests · correctness (four agents, reconciled into one list)
+- Verdict: no Must on the source; the reachability rule matches the physics. Test findings and Should items fixed in the review commit.
+- Fixed: brick letters read from `KINDS` in `assertReachable` (`kindAt`), 4-connectivity documented, "every level" wording; tests for a diagonal-only gap, a brick sealed against the right wall, a single row, a gap closed by the next wall row, and the geometry the rule relies on (grid fills the field, ball smaller than a brick); the bot counts aimed and fallback shots so the winnability proof cannot silently degrade to random bounces, and each run asserts a lives-lost bound; the tautological lives assertion removed.
+- Left as Nice: bot RNG could reuse `SeededRandom`, `AIM_FROM_Y` derived from grid constants, a unit test file for `aim.ts`, a one-cell channel between two unbreakable rows still loads (topological rule only, documented in `levels.ts`), the aim targets the brick's top edge (the centre line made the bot stall on corner bricks).
+- Pre-merge gate (local): `make verify` result recorded in the PR. QA pass on the running product is not applicable yet (no UI).

@@ -9,6 +9,7 @@ import { type World } from '../../src/domain/world';
 const CONTACT_Y = PADDLE_Y - BALL_RADIUS;
 /** Largest share of the paddle half-width the bot aims with, so it never aims at the very edge. */
 const MAX_OFFSET = 0.95;
+/** Path sampling step in logical units, smaller than the brick height (16) so no brick is skipped. */
 const SAMPLE_STEP = 8;
 
 /** The x where a falling ball reaches the paddle line, folded back by the side walls. */
@@ -59,20 +60,22 @@ export function aimedPaddleX(world: World): number | undefined {
   const ball = world.balls.items[0];
   if (ball === undefined) return undefined;
   const fromX = landingX(ball);
-  let best: Brick | undefined;
+  let bestAngle: number | undefined;
   let bestDistance = Infinity;
   for (const brick of world.bricks) {
     if (!brick.alive || !isBreakable(brick)) continue;
     const toX = brick.rect.left + brick.rect.width / 2;
     const toY = brick.rect.top + brick.rect.height / 2;
+    // Aimed at the brick's top edge: a steeper-looking shot than the centre line that was checked, which keeps
+    // the bot from stalling on corner bricks the centre line cannot reach within the paddle angle.
+    const angle = Math.atan2(toX - fromX, CONTACT_Y - brick.rect.top);
     const distance = Math.hypot(toX - fromX, toY - CONTACT_Y);
     if (distance < bestDistance && lineIsClear(world.bricks, fromX, CONTACT_Y, toX, toY)) {
-      best = brick;
+      bestAngle = angle;
       bestDistance = distance;
     }
   }
-  if (best === undefined) return undefined;
-  const angle = Math.atan2(best.rect.left + best.rect.width / 2 - fromX, CONTACT_Y - best.rect.top);
-  const offset = Math.min(Math.max(angle / MAX_PADDLE_ANGLE, -MAX_OFFSET), MAX_OFFSET);
+  if (bestAngle === undefined) return undefined;
+  const offset = Math.min(Math.max(bestAngle / MAX_PADDLE_ANGLE, -MAX_OFFSET), MAX_OFFSET);
   return fromX - offset * (world.paddle.width / 2);
 }

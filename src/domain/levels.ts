@@ -2,7 +2,7 @@ import { type LevelLayout } from './level';
 
 /**
  * The five levels of V1, in play order (game design document, section 7). Symbols: `.` empty,
- * `n` normal, `s` strong, `u` unbreakable. The first row is left empty on most levels so the ball
+ * `n` normal, `s` strong, `u` unbreakable. The first row is left empty on every level so the ball
  * has room above the bricks. Every layout is validated by `loadLevel` when the level starts.
  */
 export const LEVELS: readonly LevelLayout[] = [
