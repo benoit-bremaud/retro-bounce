@@ -21,4 +21,4 @@
 - Task #7 merged in PR #26 (squash `963bf0e`), Codex review: 1 finding fixed (effects end as soon as a life is lost).
 
 ## 2026-10-22
-- Task #8 levels: catalogue of the 5 levels in `levels.ts` (MCDA 470 vs 405 vs 290: TS module with a stricter `loadLevel` that rejects breakable bricks walled off by unbreakable ones). Winnability is proved by a bot that aims at the nearest reachable brick, on every level alone and on the whole campaign, for three seeds. Level 4 was redesigned after the bot showed a 16-unit channel between two walls was practically unreachable.
+- Task #8 levels: catalogue of the 5 levels in `levels.ts` (MCDA 470 vs 405 vs 290: TS module with a stricter `loadLevel` that rejects breakable bricks walled off by unbreakable ones). Winnability is proved by a bot that aims at the nearest reachable brick, on every level alone and on the whole campaign, for three seeds. Level 4 was redesigned after the bot showed a 16-unit channel between two walls was practically unreachable. Task #8 merged in PR #27 (squash `bb65336`), Codex: no finding.
