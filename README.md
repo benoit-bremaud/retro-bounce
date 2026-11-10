@@ -6,10 +6,13 @@ A retro brick-breaker (Arkanoid-style) played solo: a paddle moving left and rig
 
 ## Develop
 
-Node 22 (see `.nvmrc`), pnpm 10. `pnpm install`, then `pnpm dev`.
+Node 22 (see `.nvmrc`), pnpm 10. Install [mise](https://mise.run), then `just setup` (pinned tools,
+dependencies, git hooks), then `pnpm dev`.
 
-The pre-push hook runs `make verify`, which needs `gitleaks`, `sonar-scanner` and a SonarQube
-server at `http://localhost:9000` (token in `$SONAR_TOKEN` or `~/.config/sonarqube/analysis-token`).
+Every check runs locally, no GitHub workflow (ADR-0003, skill `local-ci`): `just fast` on commit,
+`just check` on push, `just gate` on the pushed head before a merge (SonarQube at
+`http://localhost:9000` with `sonar-scanner` on `PATH` and the token in `$SONAR_TOKEN` or
+`~/.config/sonarqube/analysis-token`), `just nightly` on a systemd timer. `just --list` shows them all.
 
 > The original game is a registered trademark. This repo uses a codename, original assets and no
 > trademarked name or artwork.

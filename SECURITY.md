@@ -28,9 +28,12 @@ through a GitHub security advisory once released.
 
 ## Security practices
 
-- **Secret detection** — Gitleaks runs in CI on every push and pull request, plus a weekly
-  schedule. Any finding fails the check; there is no advisory mode for secrets.
-- **Pinned actions** — every GitHub Actions step is pinned to a full commit SHA, never a tag.
+- **Secret detection** — Gitleaks runs locally on every commit (staged files), every push (full
+  history) and nightly, with TruffleHog over the history at night. Any finding fails the check;
+  there is no advisory mode for secrets.
+- **Static analysis and dependencies** — Semgrep Community Edition and `pnpm audit` (HIGH and
+  above) run before every push; a local SonarQube quality gate runs before every merge, which is
+  attested by a signed git note on the exact head (ADR-0003). No GitHub workflow runs.
 - **Dependency monitoring** — Dependabot version-update PRs are configured in `.github/dependabot.yml`.
 - **No backend, no personal data** — a static web page with no server, no account and no network
   call. The best score (planned) will stay in the browser's `localStorage`

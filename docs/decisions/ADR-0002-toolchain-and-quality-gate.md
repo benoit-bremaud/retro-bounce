@@ -1,6 +1,7 @@
 # ADR-0002: Toolchain and quality gate inherited from retro-shmup and retro-blocks
 
-**Status:** Accepted — 2026-10-19
+**Status:** Accepted — 2026-10-19. The "Local-first gate" and "Commits and PRs" rows are superseded by
+ADR-0003 (2026-11-10): local CI in four `just` tiers, lefthook hooks, no GitHub workflow.
 
 ## Context
 
