@@ -22,3 +22,7 @@
 
 ## 2026-10-22
 - Task #8 levels: catalogue of the 5 levels in `levels.ts` (MCDA 470 vs 405 vs 290: TS module with a stricter `loadLevel` that rejects breakable bricks walled off by unbreakable ones). Winnability is proved by a bot that aims at the nearest reachable brick, on every level alone and on the whole campaign, for three seeds. Level 4 was redesigned after the bot showed a 16-unit channel between two walls was practically unreachable. Task #8 merged in PR #27 (squash `bb65336`), Codex: no finding.
+
+## 2026-11-10
+- Task #39 local CI: every check moved to the four `just` tiers of skill `local-ci` (`fast` / `check` / `gate` / `nightly`), lefthook hooks, `mise.toml` + `mise.lock`, the gate attestation (`scripts/attest.sh`, exact copy of the shared script) and `just merge <pr>`; the five GitHub workflows, the Makefile, husky, lint-staged and commitlint removed; Dependabot keeps its `npm` block. ADR-0003 (partially supersedes ADR-0002). Pattern: retro-shmup #158. Owner rule 2026-11-07: Actions reserved for a signed-tag prod deploy, none here (#15 not started).
+- Branch protection on `main` to apply on the bootstrap PR, after its first `gate` status: the single required status `gate` (`.github/branch-protection.md`).

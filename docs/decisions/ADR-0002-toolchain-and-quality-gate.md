@@ -1,6 +1,7 @@
 # ADR-0002: Toolchain and quality gate inherited from retro-shmup and retro-blocks
 
-**Status:** Accepted — 2026-10-19
+**Status:** Accepted — 2026-10-19. The "Local-first gate" and "Commits and PRs" rows are superseded by
+ADR-0003 (2026-11-10): local CI in four `just` tiers, lefthook hooks, no GitHub workflow.
 
 ## Context
 
@@ -17,9 +18,9 @@ renamed. MCDA 2026-10-19: copy from retro-blocks 460/500, from retro-shmup 380/5
 | Determinism | No `Date` / `Math.random` in the domain: fixed steps and an injected seeded PRNG. |
 | No allocation in the loop | Index loops in `src/`. `for...of` is banned because it allocates an iterator below V8's optimizing tier (measured in retro-shmup, 2026-10-08). |
 | Toolchain | TypeScript 6.0 strict (typescript-eslint supports versions below 6.1), Node 22, pnpm, Vite, Vitest, ESLint strict type-checked, Prettier, knip. Tool configs are typed with Node types only. |
-| Local-first gate | `make verify` runs in the pre-push hook: typecheck, lint, knip, format, tests with coverage, doc coverage, gitleaks, `pnpm audit`, local SonarQube with quality-gate wait. CI keeps a light check plus the security workflows (Gitleaks, CodeQL, Dependency Review, OSSF Scorecard non-blocking). |
+| Local-first gate (superseded by ADR-0003) | `make verify` runs in the pre-push hook: typecheck, lint, knip, format, tests with coverage, doc coverage, gitleaks, `pnpm audit`, local SonarQube with quality-gate wait. CI keeps a light check plus the security workflows (Gitleaks, CodeQL, Dependency Review, OSSF Scorecard non-blocking). |
 | Coverage floors | Owner floors are 80 % tests and 90 % docs. Vitest thresholds start at 90 % and are a ratchet: raise, never lower. |
-| Commits and PRs | Conventional Commits enforced by commitlint and husky. Scopes: design, adr, uml, docs, ci, repo, deps, engine, game, render, audio, input, ui, levels, assets, i18n, tests. |
+| Commits and PRs (superseded by ADR-0003) | Conventional Commits enforced by commitlint and husky. Scopes: design, adr, uml, docs, ci, repo, deps, engine, game, render, audio, input, ui, levels, assets, i18n, tests. |
 
 ## Not inherited yet
 

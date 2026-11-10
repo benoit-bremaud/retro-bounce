@@ -1,0 +1,6 @@
+[Unit]
+Description=Desktop notification when the retro-bounce nightly local CI fails
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/notify-send --urgency=critical "retro-bounce local CI nightly failed" "journalctl --user -u retro-bounce-nightly.service"
