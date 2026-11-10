@@ -51,7 +51,7 @@ describe('Canvas2DRenderer', () => {
     expect(calls[0]).toBe('setTransform');
     expect(transforms[0]).toEqual([2, 0, 0, 2, 0, 0]);
     // background + 40 bricks + paddle + overlay band
-    expect(calls.filter((c) => c === 'fillRect').length).toBe(1 + FIRST_LEVEL_BRICKS + 1 + 1);
+    expect(calls.filter((c) => c === 'fillRect')).toHaveLength(1 + FIRST_LEVEL_BRICKS + 1 + 1);
     expect(calls).toContain('arc');
     expect(texts).toContain('SCORE 0   LIVES 3');
     expect(texts).toContain('TAP TO LAUNCH');
@@ -76,8 +76,10 @@ describe('Canvas2DRenderer', () => {
     session.world.piercingLeft = 5;
     session.world.balls.count = 2;
     renderer.render(session);
-    expect(calls.filter((c) => c === 'fillRect').length).toBe(1 + (FIRST_LEVEL_BRICKS - 1) + 1 + 1);
-    expect(calls.filter((c) => c === 'arc').length).toBe(2);
+    expect(calls.filter((c) => c === 'fillRect')).toHaveLength(
+      1 + (FIRST_LEVEL_BRICKS - 1) + 1 + 1,
+    );
+    expect(calls.filter((c) => c === 'arc')).toHaveLength(2);
     expect(texts).toContain('P');
     expect(texts).not.toContain('TAP TO LAUNCH');
   });
