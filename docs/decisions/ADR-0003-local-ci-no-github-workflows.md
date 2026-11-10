@@ -11,8 +11,8 @@ GitHub. Issue #39.
   Actions is reserved for a production deploy triggered by a signed release tag (local-first CI/CD
   epic, benoit-bremaud/agents-skills#210 and #259; skill `local-ci`). Actions minutes are free on
   this public repository; the rule is account-wide, driven by the Free plan quota the private
-  repositories exceeded in October and November 2026. The sibling game retro-shmup migrated first (benoit-bremaud/retro-shmup#158, ADR-0029 there); this repository
-  reuses its shape.
+  repositories exceeded in October and November 2026. The sibling game retro-shmup migrated
+  first (benoit-bremaud/retro-shmup#158, ADR-0029 there); this repository reuses its shape.
 - Every GitHub check already had a local equivalent or a free open-source one: `make verify`
   covered typecheck, lint, knip, format, tests with coverage, doc coverage, gitleaks, `pnpm audit`
   and SonarQube (ADR-0002); Semgrep Community Edition replaces CodeQL (the CodeQL CLI licence is
@@ -119,4 +119,5 @@ GitHub. Issue #39.
   `check-commit-msg.sh` (#192) are agents-skills ones; `check-cassettes.sh` is dormant here (no
   third-party call, no `record` recipe) and kept only because `test-attest.sh` exercises it.
 - benoit-bremaud/retro-shmup#158 and its ADR-0029 (reference implementation).
-- ADR-0002 (toolchain and the superseded gate rows); issues #11 (smoke), #15 (deploy), #16 (release).
+- ADR-0002 (toolchain and the superseded gate rows); issues #11 (smoke), #15 (deploy) and #16
+  (release).

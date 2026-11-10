@@ -53,7 +53,6 @@ GitHub Free. It is applied on the bootstrap pull request of ADR-0003 (#39), afte
 
 ## Apply (one-time, by owner)
 
-
 ```bash
 gh api repos/benoit-bremaud/retro-bounce/branches/main/protection \
   --method PUT \
