@@ -224,9 +224,9 @@ checksum = "sha256:cbc74b5e0982c9dbb41525fd8fb5dcd32fbee237863f7829072f4639a1ce5
 url = "https://nodejs.org/dist/v22.23.4/node-v22.23.4-win-x64.zip"
 
 [[tools."pipx:semgrep"]]
-version = "1.183.0"
+version = "1.184.0"
 backend = "pipx:semgrep"
-specifiers = ["1.183.0"]
+specifiers = ["1.184.0"]
 
 [[tools.pnpm]]
 version = "10.30.3"

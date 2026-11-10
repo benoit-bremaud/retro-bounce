@@ -25,4 +25,4 @@
 
 ## 2026-11-10
 - Task #39 local CI: every check moved to the four `just` tiers of skill `local-ci` (`fast` / `check` / `gate` / `nightly`), lefthook hooks, `mise.toml` + `mise.lock`, the gate attestation (`scripts/attest.sh`, exact copy of the shared script) and `just merge <pr>`; the five GitHub workflows, the Makefile, husky, lint-staged and commitlint removed; Dependabot keeps its `npm` block. ADR-0003 (partially supersedes ADR-0002). Pattern: retro-shmup #158. Owner rule 2026-11-07: Actions reserved for a signed-tag prod deploy, none here (#15 not started).
-- Branch protection on `main`: the single required status `gate`.
+- Branch protection on `main` to apply on the bootstrap PR, after its first `gate` status: the single required status `gate` (`.github/branch-protection.md`).

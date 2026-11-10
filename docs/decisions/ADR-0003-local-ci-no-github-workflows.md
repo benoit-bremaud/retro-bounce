@@ -9,9 +9,9 @@ GitHub. Issue #39.
 
 - The owner decided on 2026-11-07 that on every project all checks run locally and GitHub
   Actions is reserved for a production deploy triggered by a signed release tag (local-first CI/CD
-  epic, benoit-bremaud/agents-skills#210 and #259; skill `local-ci`). GitHub Actions minutes now
-  bill the account (Free plan quota exceeded in October and November 2026). The sibling game
-  retro-shmup migrated first (benoit-bremaud/retro-shmup#158, ADR-0029 there); this repository
+  epic, benoit-bremaud/agents-skills#210 and #259; skill `local-ci`). Actions minutes are free on
+  this public repository; the rule is account-wide, driven by the Free plan quota the private
+  repositories exceeded in October and November 2026. The sibling game retro-shmup migrated first (benoit-bremaud/retro-shmup#158, ADR-0029 there); this repository
   reuses its shape.
 - Every GitHub check already had a local equivalent or a free open-source one: `make verify`
   covered typecheck, lint, knip, format, tests with coverage, doc coverage, gitleaks, `pnpm audit`
@@ -70,7 +70,7 @@ GitHub. Issue #39.
   would still be caught) — rejected: the attestation replaces it; a head without a verified
   `gate` note cannot be merged, whatever was skipped locally, and the protection requires it.
 - **Keep Gitleaks on GitHub as defence in depth** — rejected: the same binary runs in L0, L1 and
-  the nightly; the server-side copy added a billed minute per push for a 10 s scan.
+  the nightly; the server-side copy added a runner minute per push for a 10 s scan.
 - **Keep CodeQL** (free on a public repository) — rejected: the heaviest job, and Semgrep CE gives
   a SAST pass in the pre-push tier, before the push rather than minutes after.
 - **Wait for the Playwright smoke test (#11) before migrating** — rejected: the gate builds the
@@ -89,21 +89,24 @@ GitHub. Issue #39.
   `attest.sh verify` finds no `.github/allowed_signers` on `origin/main` yet. Every later merge
   goes through `just merge`.
 - The gate executes the branch's code on the owner's workstation, where the signing key, the `gh`
-  token and the SonarQube token live (the Actions sandbox did that before). `just gate` therefore
-  refuses a branch that changes a file defining what the gate runs — `justfile`, `lefthook.yml`,
-  `mise.toml`, `mise.lock`, `scripts/`, `.github/allowed_signers`, `package.json`,
+  token and the SonarQube token live (the Actions sandbox did that before). `just gate` installs
+  the dependencies of the exact lockfile first (as `ci.yml` did), and refuses a branch that
+  changes a file defining what the gate runs — `justfile`, `lefthook.yml`, `mise.toml`,
+  `mise.lock`, `scripts/`, `.github/allowed_signers`, `package.json`, `pnpm-lock.yaml`,
   `vitest.config.ts`, `eslint.config.mjs`, `knip.jsonc`, `sonar-project.properties`,
   `.gitleaks.toml`, `.gitleaksignore`, `.trufflehog-exclude`, `tsconfig*.json`, `vite.config.ts`,
   `.prettierignore`, `.prettierrc.json` — until the owner has read those files and sets
   `GATE_CI_CHANGE=1`, and `just merge` runs the verifier of `origin/main`, never the checkout's.
+  The guard covers the CI configuration only: source and test code run under Vitest on the same
+  workstation, so a branch is read before it is gated, as before any local test run.
 - The GitHub merge button checks the `gate` status only, which any write token could post; the
   signed note is the control, so merges go through `just merge` only.
 - Accepted supply-chain gap: Semgrep installs through mise's `pipx` backend, so `mise.lock` pins
   the Semgrep version but not its Python dependencies (resolved at install time, no hashes). The
   other tools are checksummed. Revisit when a release binary reaches the mise registry.
 - The Security tab loses the CodeQL and Scorecard reports; Dependabot alerts stay.
-- Contributors need mise (`curl https://mise.run | sh`), then `just setup`; `sonar-scanner` stays
-  a system tool (README).
+- Contributors need mise (`curl https://mise.run | sh`), then `mise trust && mise x -- just setup`;
+  `sonar-scanner` stays a system tool (README).
 - The owner's checkout runs `git config --unset core.hooksPath` once (husky's path) before
   `just setup`; the nightly timer is enabled with `systemctl --user enable --now
   retro-bounce-nightly.timer` after linking the units of `scripts/systemd/`.
@@ -111,6 +114,9 @@ GitHub. Issue #39.
 ## References
 
 - Skill `local-ci` (tiers, attestation, templates); agents-skills ADR-0003 (attestation),
-  ADR-0004 (prod from signed tags), #210, #259.
+  ADR-0004 (prod from signed tags), #210, #259. The ADR and issue numbers inside the shared
+  copies `scripts/attest.sh`, `test-attest.sh`, `check-cassettes.sh` (#213, #372, D2) and
+  `check-commit-msg.sh` (#192) are agents-skills ones; `check-cassettes.sh` is dormant here (no
+  third-party call, no `record` recipe) and kept only because `test-attest.sh` exercises it.
 - benoit-bremaud/retro-shmup#158 and its ADR-0029 (reference implementation).
 - ADR-0002 (toolchain and the superseded gate rows); issues #11 (smoke), #15 (deploy), #16 (release).

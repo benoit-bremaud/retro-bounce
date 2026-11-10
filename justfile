@@ -78,13 +78,17 @@ gate base="origin/main":
     [ -z "$(git status --porcelain)" ] || { echo "gate: commit or set aside local changes first" >&2; exit 1; }
     case "$base" in origin/*) git fetch --quiet origin "${base#origin/}" ;; esac
     git merge-base --is-ancestor "$base" HEAD || { echo "gate: HEAD is behind $base, merge or rebase it first" >&2; exit 1; }
-    # The gate runs the branch's own recipes and scripts with the owner's keys and tokens: a branch
-    # that changes them is gated only after a human read those files (GATE_CI_CHANGE=1).
-    ci=$(git diff --name-only "$base...HEAD" -- justfile lefthook.yml mise.toml mise.lock scripts .github/allowed_signers package.json vitest.config.ts eslint.config.mjs knip.jsonc sonar-project.properties .gitleaks.toml .gitleaksignore .trufflehog-exclude 'tsconfig*.json' vite.config.ts .prettierignore .prettierrc.json)
+    # The gate runs the branch's own recipes, scripts and dependencies with the owner's keys and
+    # tokens: a branch that changes them is gated only after a human read those files
+    # (GATE_CI_CHANGE=1). Source and test code run under Vitest too: read a branch before gating it.
+    ci=$(git diff --name-only "$base...HEAD" -- justfile lefthook.yml mise.toml mise.lock scripts .github/allowed_signers package.json pnpm-lock.yaml vitest.config.ts eslint.config.mjs knip.jsonc sonar-project.properties .gitleaks.toml .gitleaksignore .trufflehog-exclude 'tsconfig*.json' vite.config.ts .prettierignore .prettierrc.json)
     [ -z "$ci" ] || [ "${GATE_CI_CHANGE:-0}" = 1 ] || { echo "gate: this branch changes the local CI itself ($(printf '%s' "$ci" | tr '\n' ' ')): read those files, then run GATE_CI_CHANGE=1 just gate" >&2; exit 1; }
     [ -n "$(git branch -r --contains HEAD)" ] || { echo "gate: push HEAD first (the attestation is written on the pushed head)" >&2; exit 1; }
     # `check` runs from the body, not as a dependency, so the HEAD it checked is the one attested.
     start=$(git rev-parse HEAD)
+    # The dependencies of this exact lockfile (ci.yml did the same before every check): a gate on
+    # whatever node_modules holds would attest a lockfile it never installed.
+    pnpm install --frozen-lockfile
     just check
     just sonar
     just build
@@ -108,7 +112,7 @@ sonar:
     curl -sf -m 5 "$url/api/system/status" | grep -q '"status":"UP"' || { echo "sonar: SonarQube is not UP at $url, start it first" >&2; exit 1; }
     SONAR_TOKEN="$SONAR_TOKEN" sonar-scanner -Dsonar.host.url="$url" -Dsonar.projectVersion="$(node -p "require('./package.json').version")" -Dsonar.qualitygate.wait=true
 
-# The production bundle (what ci.yml built on every pull request). The browser smoke test on that
+# The production bundle (the build the removed ci.yml ran on every pull request). The browser smoke test on that
 # bundle arrives with #11 (Playwright) and will replace this step. Step of gate, not of check.
 # Build the production bundle (step of gate)
 build: node-guard

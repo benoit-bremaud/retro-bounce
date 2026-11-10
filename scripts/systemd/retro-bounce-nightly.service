@@ -1,5 +1,5 @@
 [Unit]
-Description=Nightly local CI of retro-bounce: just nightly, tier L3 (#156, skill local-ci)
+Description=Nightly local CI of retro-bounce: just nightly, tier L3 (#39, skill local-ci)
 OnFailure=retro-bounce-nightly-failed.service
 
 [Service]

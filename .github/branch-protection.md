@@ -10,7 +10,7 @@ on GitHub, not in the repository.
 |---|---|
 | Require a pull request before merging | yes |
 | Required status checks | `gate` — the commit status written by `just gate` on the pushed head together with its signed note (ADR-0003, skill `local-ci`); branch up to date before merge (`strict`) |
-| Required approving reviews | see below |
+| Required approving reviews | 0 (see below) |
 | Dismiss stale approvals on new commits | yes |
 | Apply to administrators (`enforce_admins`) | yes — the owner is bound by a gate they can satisfy |
 | Force push | blocked |
@@ -37,26 +37,22 @@ note, verified against the trust store of `origin/main`, is the real control, an
 checks it. The owner therefore merges through `just merge` only, never the GitHub button; no
 collaborator holds write access and personal tokens keep the minimal scopes.
 
-### Required reviews: 0 now, 1 once a reviewer bot exists
+### Required reviews: 0
 
-The cross-project convention is 1 required review. On this repository there is
-one human and, for now, no reviewer bot: with `required_approving_review_count`
-at 1 every PR would be unmergeable without an admin bypass, and a gate that is
-bypassed on every merge is worse than none.
-
-- **Recommended default (now): `0`.** A PR is still mandatory, the `gate`
-  status must be green on the head, and the local pre-push review gate runs before every push.
-- **Switch to `1`** as soon as a reviewer bot (Copilot or Codex) is configured
-  and counts as an approval. Only the count changes; re-run the apply command.
+The review is the local adversarial review of the pre-push gate (owner rule 2026-11-07: no
+GitHub-hosted reviewer, no Copilot review, no `@codex` connector). With one human and no
+approving reviewer, `required_approving_review_count` at 1 would make every PR unmergeable
+without an admin bypass, and a gate bypassed on every merge is worse than none. A PR is still
+mandatory and the `gate` status must be green on the head.
 
 ### When to apply
 
 The repository is public (ADR-0005 of the owner's rules), so the protection is available on
-GitHub Free. It was first applied on the bootstrap pull request of ADR-0003 (#39).
+GitHub Free. It is applied on the bootstrap pull request of ADR-0003 (#39), after its first
+`gate` status and before its merge.
 
 ## Apply (one-time, by owner)
 
-Recommended default (0 required approvals):
 
 ```bash
 gh api repos/benoit-bremaud/retro-bounce/branches/main/protection \
@@ -72,31 +68,6 @@ gh api repos/benoit-bremaud/retro-bounce/branches/main/protection \
   "enforce_admins": true,
   "required_pull_request_reviews": {
     "required_approving_review_count": 0,
-    "dismiss_stale_reviews": true
-  },
-  "restrictions": null,
-  "allow_force_pushes": false,
-  "allow_deletions": false
-}
-EOF
-```
-
-With a reviewer bot (1 required approval) — same body, one value changed:
-
-```bash
-gh api repos/benoit-bremaud/retro-bounce/branches/main/protection \
-  --method PUT \
-  --input - <<'EOF'
-{
-  "required_status_checks": {
-    "strict": true,
-    "checks": [
-      { "context": "gate" }
-    ]
-  },
-  "enforce_admins": true,
-  "required_pull_request_reviews": {
-    "required_approving_review_count": 1,
     "dismiss_stale_reviews": true
   },
   "restrictions": null,
@@ -142,8 +113,6 @@ Expected:
   "deletion": false
 }
 ```
-
-(`"reviews": 1` once the bot-reviewer variant is applied.)
 
 ## Remove (emergency only)
 

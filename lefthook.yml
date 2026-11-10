@@ -1,4 +1,5 @@
-# Git hooks for the local CI (#39, skill local-ci): tier L0 on commit, L1 on push. Install once per
+# Git hooks for the local CI (#39, skill local-ci): tier L0 on commit (plus the
+# Conventional Commit subject on commit-msg), L1 on push. Install once per
 # clone: `just setup` (mise install, pnpm install, lefthook install). `mise x --` puts the pinned
 # tools of mise.toml (Node 22 and pnpm included) on PATH whether or not the shell activates mise.
 # Replaces husky, lint-staged and commitlint (ADR-0003).

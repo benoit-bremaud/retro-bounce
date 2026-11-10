@@ -1,5 +1,5 @@
 #!/bin/sh
-# commit-msg check (#192): the subject line must follow Conventional Commits 1.0.0 with the types of
+# commit-msg check (agents-skills#192): the subject line must follow Conventional Commits 1.0.0 with the types of
 # agent-rules/core.md § Naming and a mandatory scope of CLAUDE.md (the scope-enum of the removed
 # commitlint config, ADR-0003), at most 100 characters. Merge, revert and fixup/squash/amend subjects pass.
 # Usage: check-commit-msg.sh <commit-msg-file>   (lefthook commit-msg passes {1})

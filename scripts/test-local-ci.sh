@@ -4,7 +4,7 @@
 # the Node major and pnpm pins agree, lefthook.yml is valid and wires the commit-msg and pre-push hooks,
 # the commit-msg check accepts and refuses the right subjects; then, in a throwaway repository with
 # stubbed boundaries (just steps, attest.sh, gh, sonar-scanner): gate refuses a dirty tree, a HEAD
-# behind the base or unpushed, runs check → sonar → build → attestation on the captured head SHA in that order, stops at the
+# behind the base or unpushed, installs the lockfile's dependencies, then runs check → sonar → build → attestation on the captured head SHA in that order, stops at the
 # first failing step and attests nothing when a step fails or HEAD moved, and propagates a failed
 # attestation (agents-skills ADR-0003); merge refuses a non-numeric PR and a head without attestation,
 # merges with --squash --match-head-commit and propagates a gh failure; sonar refuses a missing or
@@ -149,11 +149,11 @@ box_run 1 "gate: unpushed HEAD refused" "push HEAD first" -- "$real_just" gate m
 no_line '^just check' "gate ran check on an unpushed HEAD"
 git push -q origin main 2> /dev/null
 box_run 0 "gate: green path" "attest write gate" -- "$real_just" gate main
-[ "$(tr '\n' ' ' < "$LOG")" = "just check just sonar just build attest write gate $(git rev-parse HEAD) " ] || { cat "$LOG"; fail "gate steps or order: $(cat "$LOG")"; }; ok
+[ "$(tr '\n' ' ' < "$LOG")" = "pnpm install --frozen-lockfile just check just sonar just build attest write gate $(git rev-parse HEAD) " ] || { cat "$LOG"; fail "gate steps or order: $(cat "$LOG")"; }; ok
 box_run 1 "gate: failing build stops it" - -- env FAIL_STEP=build "$real_just" gate main
 no_line '^attest' "gate attested after a failed step"
 box_run 1 "gate: failing check stops it" - -- env FAIL_STEP=check "$real_just" gate main
-[ "$(tr '\n' ' ' < "$LOG")" = "just check " ] || { cat "$LOG"; fail "gate went past a failed check"; }; ok
+[ "$(tr '\n' ' ' < "$LOG")" = "pnpm install --frozen-lockfile just check " ] || { cat "$LOG"; fail "gate went past a failed check"; }; ok
 box_run 1 "gate: failing sonar stops it" - -- env FAIL_STEP=sonar "$real_just" gate main
 no_line '^just build' "gate ran build after a failed sonar"
 box_run 1 "gate: failed attestation propagates" - -- env ATTEST_FAIL=1 "$real_just" gate main
@@ -165,6 +165,9 @@ box_run 0 "gate: the same branch gated after reading" "attest write gate" -- env
 git reset -q --hard origin/main
 printf '{"version":"0.0.1"}\n' > package.json && git commit -qam 'chore(repo): scripts change' --no-verify && git push -q origin HEAD:ci2 2> /dev/null
 box_run 1 "gate: a branch changing package.json refused" "package.json" -- "$real_just" gate origin/main
+git reset -q --hard origin/main
+echo "lockfileVersion: 9" > pnpm-lock.yaml && git add pnpm-lock.yaml && git commit -qm 'chore(deps): lockfile change' --no-verify && git push -q origin HEAD:ci3 2> /dev/null
+box_run 1 "gate: a branch changing the lockfile refused" "pnpm-lock.yaml" -- "$real_just" gate origin/main
 git reset -q --hard origin/main
 box_run 1 "gate: HEAD moved during the run" "HEAD moved" -- env MOVE_HEAD=1 "$real_just" gate main
 no_line '^attest' "gate attested a HEAD that moved"

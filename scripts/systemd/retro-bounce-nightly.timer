@@ -2,7 +2,7 @@
 Description=Nightly local CI of retro-bounce (catches up after the PC was off)
 
 [Timer]
-OnCalendar=*-*-* 04:50:00
+OnCalendar=*-*-* 05:20:00
 Persistent=true
 RandomizedDelaySec=10min
 
