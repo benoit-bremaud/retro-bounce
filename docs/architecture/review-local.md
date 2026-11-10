@@ -1,7 +1,7 @@
 # Local review — retro-bounce (branch ci/39-local-ci-no-workflows vs main)
 
 - Date: 2026-11-10
-- Commit: 9b3a100 (+ the Nice fixes and this report in the next commit)
+- Commit: be30bb6 (fixes 9b3a100, report and nits 983c831, wiring test env be30bb6)
 - Scope: branch diff main...HEAD — local CI (justfile, lefthook, mise, scripts, ADR-0003), five workflows, Makefile, husky and commitlint removed (#39)
 - Checks run: adversarial (Opus, 2 rounds) · docs · correctness (adversarial's run of `just check`) · security (secrets step, Semgrep, audit through `just check`). Design and tests auditors not run: no application code in the diff (shell, YAML, Markdown); containers n/a (no Dockerfile).
 - Verdict: ship · Must 0 · Should 0 · Nice 0 (all applied)
@@ -9,10 +9,11 @@
 
 ## Adversarial review (#236)
 - Round 1 on `f371ab6`: Must 4 · Should 6 · Nice 3 · unverified 1 · Push gate: closed
-- Round 2 on `9b3a100`: 12 fixed · 0 not fixed · 0 regressed · 1 intentional (dormant `check-cassettes.sh`) · new Must 0 · **Push gate: open**
+- Round 2 on `9b3a100`: 12 fixed · 0 not fixed · 0 regressed · 1 intentional (dormant `check-cassettes.sh`) · new Must 0 · Push gate: open
+- Round 3 on `be30bb6` (report commit and the wiring test no longer inheriting `SONAR_TOKEN`): 2 fixed · new Must 0 · **Push gate: open**
 - Optional second review (owner's OpenAI account): ChatGPT/Codex not run
 
-## Pre-merge gate (head SHA 9b3a100)
+## Pre-merge gate (head SHA be30bb6)
 | Step | Result |
 |---|---|
 | 0 CI mirror | n/a after this change: no PR workflow is left. Before it: `ci.yml` → `just lint` + `just test` + `just build` (same pnpm scripts, Node 22, pnpm 10.30.3); `gitleaks.yml` (8.30.1) → `just secrets` (gitleaks 8.30.1 in `mise.toml`); CodeQL → Semgrep CE (`just security`); Dependency review → `pnpm audit --audit-level high`; Scorecard → dropped (GitHub-only) |
